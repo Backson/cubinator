@@ -1,0 +1,14 @@
+Debug/**
+Release/**
+bin/**
+obj/**
+**.o
+**.obj
+**.a
+**.lib
+**.depend
+**.layout
+**.mk
+**.tags
+**.workspace.session
+
