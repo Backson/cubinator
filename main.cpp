@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "permut.h"
 #include "cube.h"
@@ -72,6 +74,8 @@ void draw_cube(const Cube& cube) {
 
 int main(int argc, char *argv[])
 {
+	srand(time(NULL));
+	
 	static const Cube& r = Cube::TURN_RIGHT;
 	static const Cube& l = Cube::TURN_LEFT;
 	
@@ -81,15 +85,25 @@ int main(int argc, char *argv[])
 	static const Cube& f = Cube::TURN_FRONT;
 	static const Cube& b = Cube::TURN_BACK;
 	
-	for (int i = 0; i < FACTORIALS[3]; i++) {
-		print_perm(from_id<3>(i));
-	}
-	
 	auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
-	print_cube(tperm);
-	print_cube(tperm+tperm);
+	//print_cube(tperm);
+	//print_cube(tperm+tperm);
 	
-	print_cube((Cube::parse("R U R' U'"))*6);
+	//print_cube((Cube::parse("R U R' U'"))*6);
+	
+	Perm<6> perm;
+	print_perm(perm);
+	printf("%d\n", perm.parity());
+	
+	for (int i = 0; i < 20; i++) {
+		int a = rand() % 6;
+		int b = rand() % 5;
+		if (b >= a) b++;
+		
+		perm.swap(a, b);
+		print_perm(perm);
+		printf("%d\n", perm.parity());
+	}
 	
 	return 0;
 }
