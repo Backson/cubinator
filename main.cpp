@@ -4,7 +4,6 @@
 
 #include "permut.h"
 #include "cube.h"
-#include "factorial.h"
 
 template<int length>
 void print_perm(Perm<length> perm) {
@@ -86,24 +85,10 @@ int main(int argc, char *argv[])
 	static const Cube& b = Cube::TURN_BACK;
 	
 	auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
-	//print_cube(tperm);
-	//print_cube(tperm+tperm);
+	print_cube(tperm);
+	print_cube(tperm+tperm);
 	
-	//print_cube((Cube::parse("R U R' U'"))*6);
-	
-	Perm<6> perm;
-	print_perm(perm);
-	printf("%d\n", perm.parity());
-	
-	for (int i = 0; i < 20; i++) {
-		int a = rand() % 6;
-		int b = rand() % 5;
-		if (b >= a) b++;
-		
-		perm.swap(a, b);
-		print_perm(perm);
-		printf("%d\n", perm.parity());
-	}
+	print_cube((Cube::parse("R U R' U'"))*6);
 	
 	return 0;
 }

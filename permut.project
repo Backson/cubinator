@@ -76,6 +76,5 @@
     <File Name="permut.h"/>
     <File Name="cube.cpp"/>
     <File Name="cube.h"/>
-    <File Name="permut.cpp"/>
   </VirtualDirectory>
 </CodeLite_Project>
