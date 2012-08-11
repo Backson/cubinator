@@ -25,6 +25,20 @@ const Cube Cube::TURN_BACK(
 	{ 0, 1, 6,10, 4, 5, 3, 7, 8, 9, 2,11}, {0,1,3,7,4,5,2,6},
 	{ 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0}, {0,0,1,2,0,0,2,1});
 
+const Cube Cube::TURN_MIDDLE(
+	{ 0, 1, 2, 3, 8, 5, 4, 7,10, 9, 6,11}, {0,1,2,3,4,5,6,7},
+	{ 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0}, {0,0,0,0,0,0,0,0});
+const Cube Cube::TURN_EQUATOR(
+	{ 3, 0, 1, 2, 4, 5, 6, 7, 8, 9,10,11}, {0,1,2,3,4,5,6,7},
+	{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}, {0,0,0,0,0,0,0,0});
+const Cube Cube::TURN_STANDING(
+	{ 0, 1, 2, 3, 4, 9, 6, 5, 8,11,10, 7}, {0,1,2,3,4,5,6,7},
+	{ 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1}, {0,0,0,0,0,0,0,0});
+
+const Cube Cube::TURN_X = Cube::TURN_RIGHT - Cube::TURN_LEFT - Cube::TURN_MIDDLE;
+const Cube Cube::TURN_Y = Cube::TURN_UP - Cube::TURN_DOWN - Cube::TURN_EQUATOR;
+const Cube Cube::TURN_Z = Cube::TURN_FRONT - Cube::TURN_BACK + Cube::TURN_STANDING;
+
 Cube::Cube() {
 	memset(m_edge_orients, 0, 12 * sizeof (int));
 	memset(m_corner_orients, 0, 8 * sizeof (int));
@@ -90,14 +104,16 @@ Cube& Cube::operator-=(const Cube& that) {
 Cube Cube::operator*(int exponent) const {
 	Cube result;
 	
-	if (exponent < 0) {
-		result = result.inverse();
-		exponent *= -1;
-	}
-	
-	while(exponent > 0) {
-		result += *this;
-		exponent--;
+	if (exponent > 0) {
+		while(exponent > 0) {
+			result += *this;
+			exponent--;
+		}
+	} else {
+		while(exponent < 0) {
+			result -= *this;
+			exponent++;
+		}
 	}
 	
 	return result;

@@ -48,7 +48,7 @@ public:
 	Perm inverse() const;
 	
 	// get the parity of the permutation
-	int parity();
+	int parity() const;
 	
 	// onto which element is element i projected by this permutation?
 	int element(int i) const { return m_elements[i]; }
@@ -205,7 +205,7 @@ Perm<length> Perm<length>::inverse() const {
 }
 
 template<int length>
-int Perm<length>::parity() {
+int Perm<length>::parity() const {
 	int inversion_count = 0;
 	
 	for (int j = 0; j < length; j++) {

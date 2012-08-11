@@ -28,8 +28,8 @@ void print_cube(const Cube& cube) {
 	printf("\n");
 }
 
-void draw_cube(const Cube& cube) {
-	static const char corner_stones[8][3] = {
+void draw_up(const Cube& cube) {
+		static const char corner_stones[8][3] = {
 		{'w','o','b'},
 		{'w','b','r'},
 		{'w','r','g'},
@@ -51,8 +51,6 @@ void draw_cube(const Cube& cube) {
 		{'y','r'},
 		{'y','g'},
 		{'y','o'}};
-	
-	// up
 	auto stone1 = corner_stones[cube.corners().element(7)][(3-cube.corner_orients()[7]) % 3];
 	auto stone2 = edge_stones[cube.edges().element(10)][cube.edge_orients()[10]];
 	auto stone3 = corner_stones[cube.corners().element(6)][(3-cube.corner_orients()[6]) % 3];
@@ -66,8 +64,36 @@ void draw_cube(const Cube& cube) {
 	stone2 = edge_stones[cube.edges().element(8)][cube.edge_orients()[8]];
 	stone3 = corner_stones[cube.corners().element(5)][(3-cube.corner_orients()[5]) % 3];
 	printf(" %c %c %c \n", stone1, stone2, stone3);
+}
+
+void draw_cube(const Cube& cube) {
+	static const char* side_names[6] = {
+	"UP", "DOWN", "FRONT", "RIGHT", "BACK", "LEFT"};
+	/*static const Cube::Cube turns[6] = {
+		Cube::TURN_IDENTITY,
+		Cube::TURN_X*2,
+		Cube::TURN_X*(-1),
+		Cube::TURN_Z*(-1),
+		Cube::TURN_Z*(-1),
+		Cube::TURN_Z*(-1)
+	};*/
 	
-	printf("+-----+\n");
+	static const Cube::Cube turns[6] = {
+		Cube::TURN_IDENTITY,
+		Cube::TURN_X*2,
+		Cube::TURN_X,
+		Cube::TURN_Z*(-1) + Cube::TURN_Y,
+		Cube::TURN_X*(-1) + Cube::TURN_Y * 2,
+		Cube::TURN_Z + Cube::TURN_Y*(-1)
+	};
+	
+	for(int i = 0; i < 6; i++) {
+		printf("%s\n", side_names[i]);
+		draw_up(cube + turns[i]);
+		if(i < 5) {
+			printf("+-----+\n");
+		}
+	}
 }
 
 
@@ -89,6 +115,8 @@ int main(int argc, char *argv[])
 	print_cube(tperm+tperm);
 	
 	print_cube((Cube::parse("R U R' U'"))*6);
+	
+	draw_cube(Cube());
 	
 	return 0;
 }

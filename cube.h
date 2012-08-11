@@ -18,7 +18,15 @@ public:
 	
 	static const Cube TURN_FRONT;
 	static const Cube TURN_BACK;
-
+	
+	static const Cube TURN_MIDDLE;
+	static const Cube TURN_EQUATOR;
+	static const Cube TURN_STANDING;
+	
+	static const Cube TURN_X;
+	static const Cube TURN_Y;
+	static const Cube TURN_Z;
+	
 	Cube();
 	Cube(const Cube& that) { this->operator=(that); }
 	Cube(std::initializer_list<int> edges, std::initializer_list<int> corners,
