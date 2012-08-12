@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <string.h>
 
 template<int length>
 class Perm {
@@ -179,7 +180,7 @@ Perm<length> Perm<length>::operator*(int exponent) const {
 	}
 	
 	while(exponent > 0) {
-		result *= *this;
+		result += *this;
 		exponent--;
 	}
 	

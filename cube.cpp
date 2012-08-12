@@ -44,11 +44,9 @@ Cube::Cube() {
 	memset(m_corner_orients, 0, 8 * sizeof (int));
 }
 Cube::Cube(std::initializer_list<int> edges, std::initializer_list<int> corners,
-	std::initializer_list<int> edge_orients, std::initializer_list<int> corner_orients) {
-		
-	m_edges = Perm<12>(edges);
-	m_corners = Perm<8>(corners);
-	
+	std::initializer_list<int> edge_orients, std::initializer_list<int> corner_orients)
+	: m_edges(edges), m_corners(corners)
+{
 	int i = 0;
 	for (auto iter = edge_orients.begin(); iter != edge_orients.end(); iter++, i++) {
 		m_edge_orients[i] = *iter;

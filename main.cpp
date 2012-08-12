@@ -58,7 +58,7 @@ void draw_up(const Cube& cube) {
 	
 	stone1 = edge_stones[cube.edges().element(11)][cube.edge_orients()[11]];
 	stone2 = edge_stones[cube.edges().element(9)][cube.edge_orients()[9]];
-	printf(" %c y %c \n", stone1, stone2);
+	printf(" %c   %c \n", stone1, stone2);
 	
 	stone1 = corner_stones[cube.corners().element(4)][(3-cube.corner_orients()[4]) % 3];
 	stone2 = edge_stones[cube.edges().element(8)][cube.edge_orients()[8]];
@@ -96,7 +96,6 @@ void draw_cube(const Cube& cube) {
 	}
 }
 
-
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
@@ -117,6 +116,8 @@ int main(int argc, char *argv[])
 	print_cube((Cube::parse("R U R' U'"))*6);
 	
 	draw_cube(Cube());
+	
+	
 	
 	return 0;
 }
