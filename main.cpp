@@ -3,7 +3,7 @@
 #include <time.h>
 
 #include "permut.h"
-#include "cube.h"
+#include "cube_ex.h"
 
 template<int length>
 void print_perm(Perm<length> perm) {
@@ -28,7 +28,28 @@ void print_cube(const Cube& cube) {
 	printf("\n");
 }
 
-void draw_up(const Cube& cube) {
+void print_cube(const ExtendedCube& cube) {
+	//printf("e ");
+	for (int i = 0; i < 12; i++)
+		printf("%c%1X ", cube.edge_orients()[i] ? '-' : '+', cube.edges().element(i));
+	
+	printf(": ");
+	
+	for (int i = 0; i < 8; i++) {
+		static const char cs[] = {'.','+','-'};
+		char c = cs[cube.corner_orients()[i]];
+		printf("%c%1X ", c, cube.corners().element(i));
+	}
+	
+	printf(": ");
+	
+	for (int i = 0; i < 6; i++)
+		printf("%1X ", cube.middles().element(i));
+	
+	printf("\n");
+}
+
+void draw_up(const ExtendedCube& cube) {
 		static const char corner_stones[8][3] = {
 		{'w','o','b'},
 		{'w','b','r'},
@@ -51,14 +72,17 @@ void draw_up(const Cube& cube) {
 		{'y','r'},
 		{'y','g'},
 		{'y','o'}};
+	static const char middle_stones[6] = {'y','b','r','g','o','w'};
+	
 	auto stone1 = corner_stones[cube.corners().element(7)][(3-cube.corner_orients()[7]) % 3];
 	auto stone2 = edge_stones[cube.edges().element(10)][cube.edge_orients()[10]];
 	auto stone3 = corner_stones[cube.corners().element(6)][(3-cube.corner_orients()[6]) % 3];
 	printf(" %c %c %c \n", stone1, stone2, stone3);
 	
 	stone1 = edge_stones[cube.edges().element(11)][cube.edge_orients()[11]];
-	stone2 = edge_stones[cube.edges().element(9)][cube.edge_orients()[9]];
-	printf(" %c   %c \n", stone1, stone2);
+	stone2 = middle_stones[cube.middles().element(0)];
+	stone3 = edge_stones[cube.edges().element(9)][cube.edge_orients()[9]];
+	printf(" %c %c %c \n", stone1, stone2, stone3);
 	
 	stone1 = corner_stones[cube.corners().element(4)][(3-cube.corner_orients()[4]) % 3];
 	stone2 = edge_stones[cube.edges().element(8)][cube.edge_orients()[8]];
@@ -66,25 +90,25 @@ void draw_up(const Cube& cube) {
 	printf(" %c %c %c \n", stone1, stone2, stone3);
 }
 
-void draw_cube(const Cube& cube) {
-	static const char* side_names[6] = {
+void draw_cube(const ExtendedCube& cube) {
+	const char* side_names[6] = {
 	"UP", "DOWN", "FRONT", "RIGHT", "BACK", "LEFT"};
-	/*static const Cube::Cube turns[6] = {
-		Cube::TURN_IDENTITY,
-		Cube::TURN_X*2,
-		Cube::TURN_X*(-1),
-		Cube::TURN_Z*(-1),
-		Cube::TURN_Z*(-1),
-		Cube::TURN_Z*(-1)
+	/*static const ExtendedCube::ExtendedCube turns[6] = {
+		ExtendedCube::TURN_IDENTITY,
+		ExtendedCube::TURN_X*2,
+		ExtendedCube::TURN_X*(-1),
+		ExtendedCube::TURN_Z*(-1),
+		ExtendedCube::TURN_Z*(-1),
+		ExtendedCube::TURN_Z*(-1)
 	};*/
 	
-	static const Cube::Cube turns[6] = {
-		Cube::TURN_IDENTITY,
-		Cube::TURN_X*2,
-		Cube::TURN_X,
-		Cube::TURN_Z*(-1) + Cube::TURN_Y,
-		Cube::TURN_X*(-1) + Cube::TURN_Y * 2,
-		Cube::TURN_Z + Cube::TURN_Y*(-1)
+	const ExtendedCube::ExtendedCube turns[6] = {
+		ExtendedCube::TURN_IDENTITY,
+		ExtendedCube::TURN_X*2,
+		ExtendedCube::TURN_X,
+		ExtendedCube::TURN_Z*(-1) + ExtendedCube::TURN_Y,
+		ExtendedCube::TURN_X*(-1) + ExtendedCube::TURN_Y * 2,
+		ExtendedCube::TURN_Z + ExtendedCube::TURN_Y*(-1)
 	};
 	
 	for(int i = 0; i < 6; i++) {
@@ -109,14 +133,13 @@ int main(int argc, char *argv[])
 	static const Cube& f = Cube::TURN_FRONT;
 	static const Cube& b = Cube::TURN_BACK;
 	
-	auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
-	print_cube(tperm);
-	print_cube(tperm+tperm);
+	/*auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
+	draw_cube(tperm);
+	draw_cube(tperm+tperm);*/
 	
-	print_cube((Cube::parse("R U R' U'"))*6);
+	draw_cube((Cube::parse("R U R' U'")));
 	
-	draw_cube(Cube());
-	
+	draw_cube(ExtendedCube());
 	
 	
 	return 0;

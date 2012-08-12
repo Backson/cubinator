@@ -5,11 +5,19 @@
 
 class ExtendedCube : public Cube {
 public:
+	static const ExtendedCube TURN_MIDDLE;
+	static const ExtendedCube TURN_EQUATOR;
+	static const ExtendedCube TURN_STANDING;
+	
+	static const ExtendedCube TURN_X;
+	static const ExtendedCube TURN_Y;
+	static const ExtendedCube TURN_Z;
+	
 	ExtendedCube() = default;;
 	ExtendedCube(const ExtendedCube& cube) { *this=cube; };
 	ExtendedCube(std::initializer_list<int> edges, std::initializer_list<int> corners,
 		std::initializer_list<int> edge_orients, std::initializer_list<int> corner_orients,
-		std::initializer_list<int> middles);
+		const Perm<6>& middles);
 	ExtendedCube(const Cube& cube);
 	ExtendedCube(const Cube& cube, Perm<6> middles);
 	~ExtendedCube() = default;

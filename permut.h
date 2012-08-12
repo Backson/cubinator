@@ -35,11 +35,15 @@ public:
 	// concatenate this permutation with another one
 	Perm operator+(const Perm&) const;
 	
+	// concatenate this permutation with inverse of another one
+	Perm operator-(const Perm&) const;
+	
 	// concatenate this permutation with another one
 	Perm operator*(int exponent) const;
 	
 	// shortcuts for operator assignments
 	inline Perm& operator+=(const Perm& that) { operator=((*this) + that); return *this; };
+	inline Perm& operator-=(const Perm& that) { operator=((*this) - that); return *this; };
 	inline Perm& operator*=(int exponent) { operator=((*this) * exponent); return *this; };
 	
 	// swap two elements
@@ -171,17 +175,24 @@ Perm<length> Perm<length>::operator+(const Perm& that) const {
 }
 
 template<int length>
+Perm<length> Perm<length>::operator-(const Perm& that) const {
+	return operator+(that.inverse());
+}
+
+template<int length>
 Perm<length> Perm<length>::operator*(int exponent) const {
 	Perm<length> result;
 	
-	if (exponent < 0) {
-		result = result.inverse();
-		exponent *= -1;
-	}
-	
-	while(exponent > 0) {
-		result += *this;
-		exponent--;
+	if (exponent > 0) {
+		while(exponent > 0) {
+			result += *this;
+			exponent--;
+		}
+	} else {
+		while(exponent < 0) {
+			result -= *this;
+			exponent++;
+		}
 	}
 	
 	return result;

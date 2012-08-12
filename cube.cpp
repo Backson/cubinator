@@ -4,40 +4,14 @@
 
 const Cube Cube::TURN_IDENTITY;
 
-const Cube Cube::TURN_RIGHT(
-	{ 0, 5, 9, 3, 4, 2, 6, 7, 8, 1,10,11}, {0,2,6,3,4,1,5,7},
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,1,2,0,0,2,1,0});
-const Cube Cube::TURN_LEFT(
-	{11, 1, 2, 7, 4, 5, 6, 0, 8, 9,10, 3}, {4,1,2,0,7,5,6,3},
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {2,0,0,1,1,0,0,2});
+const Cube Cube::TURN_RIGHT(TURN_RIGHT_INITIALIZER);
+const Cube Cube::TURN_LEFT(TURN_LEFT_INITIALIZER);
 
-const Cube Cube::TURN_UP(
-	{ 0, 1, 2, 3, 4, 5, 6, 7, 9,10,11, 8}, {0,1,2,3,5,6,7,4},
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,0,0,0,0,0,0,0});
-const Cube Cube::TURN_DOWN(
-	{ 0, 1, 2, 3, 7, 4, 5, 6, 8, 9,10,11}, {3,0,1,2,4,5,6,7},
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,0,0,0,0,0,0,0});
+const Cube Cube::TURN_UP(TURN_UP_INITIALIZER);
+const Cube Cube::TURN_DOWN(TURN_DOWN_INITIALIZER);
 
-const Cube Cube::TURN_FRONT(
-	{ 4, 8, 2, 3, 1, 5, 6, 7, 0, 9,10,11}, {1,5,2,3,0,4,6,7},
-	{ 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}, {1,2,0,0,2,1,0,0});
-const Cube Cube::TURN_BACK(
-	{ 0, 1, 6,10, 4, 5, 3, 7, 8, 9, 2,11}, {0,1,3,7,4,5,2,6},
-	{ 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0}, {0,0,1,2,0,0,2,1});
-
-const Cube Cube::TURN_MIDDLE(
-	{ 0, 1, 2, 3, 8, 5, 4, 7,10, 9, 6,11}, {0,1,2,3,4,5,6,7},
-	{ 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0}, {0,0,0,0,0,0,0,0});
-const Cube Cube::TURN_EQUATOR(
-	{ 3, 0, 1, 2, 4, 5, 6, 7, 8, 9,10,11}, {0,1,2,3,4,5,6,7},
-	{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}, {0,0,0,0,0,0,0,0});
-const Cube Cube::TURN_STANDING(
-	{ 0, 1, 2, 3, 4, 9, 6, 5, 8,11,10, 7}, {0,1,2,3,4,5,6,7},
-	{ 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1}, {0,0,0,0,0,0,0,0});
-
-const Cube Cube::TURN_X = Cube::TURN_RIGHT - Cube::TURN_LEFT - Cube::TURN_MIDDLE;
-const Cube Cube::TURN_Y = Cube::TURN_UP - Cube::TURN_DOWN - Cube::TURN_EQUATOR;
-const Cube Cube::TURN_Z = Cube::TURN_FRONT - Cube::TURN_BACK + Cube::TURN_STANDING;
+const Cube Cube::TURN_FRONT(TURN_FRONT_INITIALIZER);
+const Cube Cube::TURN_BACK(TURN_BACK_INITIALIZER);
 
 Cube::Cube() {
 	memset(m_edge_orients, 0, 12 * sizeof (int));
@@ -153,7 +127,7 @@ Cube Cube::parse(const char* msg) {
 		case 'D': last = &TURN_DOWN; break;
 		case 'F': last = &TURN_FRONT; break;
 		case 'B': last = &TURN_BACK; break;
-		case ' ': break;
+		case ' ': continue;
 		default: throw "unknown character";
 		}
 		if (msg[0] == '2') {

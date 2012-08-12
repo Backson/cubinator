@@ -1,6 +1,25 @@
 #ifndef cube_h
 #define cube_h
 
+#define TURN_RIGHT_INITIALIZER \
+	{ 0, 5, 9, 3, 4, 2, 6, 7, 8, 1,10,11}, {0,2,6,3,4,1,5,7},\
+	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,1,2,0,0,2,1,0}
+#define TURN_LEFT_INITIALIZER \
+	{11, 1, 2, 7, 4, 5, 6, 0, 8, 9,10, 3}, {4,1,2,0,7,5,6,3},\
+	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {2,0,0,1,1,0,0,2}
+#define TURN_UP_INITIALIZER \
+	{ 0, 1, 2, 3, 4, 5, 6, 7, 9,10,11, 8}, {0,1,2,3,5,6,7,4},\
+	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,0,0,0,0,0,0,0}
+#define TURN_DOWN_INITIALIZER \
+	{ 0, 1, 2, 3, 7, 4, 5, 6, 8, 9,10,11}, {3,0,1,2,4,5,6,7},\
+	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,0,0,0,0,0,0,0}
+#define TURN_FRONT_INITIALIZER \
+	{ 4, 8, 2, 3, 1, 5, 6, 7, 0, 9,10,11}, {1,5,2,3,0,4,6,7},\
+	{ 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}, {1,2,0,0,2,1,0,0}
+#define TURN_BACK_INITIALIZER \
+	{ 0, 1, 6,10, 4, 5, 3, 7, 8, 9, 2,11}, {0,1,3,7,4,5,2,6},\
+	{ 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0}, {0,0,1,2,0,0,2,1}
+
 #include "permut.h"
 
 #include <initializer_list>
@@ -18,14 +37,6 @@ public:
 	
 	static const Cube TURN_FRONT;
 	static const Cube TURN_BACK;
-	
-	static const Cube TURN_MIDDLE;
-	static const Cube TURN_EQUATOR;
-	static const Cube TURN_STANDING;
-	
-	static const Cube TURN_X;
-	static const Cube TURN_Y;
-	static const Cube TURN_Z;
 	
 	Cube();
 	Cube(const Cube& that) { this->operator=(that); }
