@@ -84,3 +84,47 @@ ExtendedCube ExtendedCube::inverse() const {
 	ExtendedCube result(conv.inverse(), this->m_middles.inverse());
 	return result;
 }
+
+ExtendedCube ExtendedCube::parse(const char* msg) {
+	ExtendedCube result;
+	
+	char c;
+	
+	ExtendedCube last = ExtendedCube(TURN_IDENTITY);
+	
+	while (c = *msg++) {
+		switch (c) {
+		case 'R': last = TURN_RIGHT; break;
+		case 'L': last = TURN_LEFT; break;
+		case 'U': last = TURN_UP; break;
+		case 'D': last = TURN_DOWN; break;
+		case 'F': last = TURN_FRONT; break;
+		case 'B': last = TURN_BACK; break;
+		case 'M': last = TURN_MIDDLE; break;
+		case 'E': last = TURN_EQUATOR; break;
+		case 'S': last = TURN_STANDING; break;
+		case 'x': last = TURN_X; break;
+		case 'y': last = TURN_Y; break;
+		case 'z': last = TURN_Z; break;
+		case 'r': last = TURN_RIGHT - TURN_MIDDLE; break;
+		case 'l': last = TURN_LEFT + TURN_MIDDLE; break;
+		case 'u': last = TURN_UP - TURN_EQUATOR; break;
+		case 'd': last = TURN_DOWN + TURN_EQUATOR; break;
+		case 'f': last = TURN_FRONT + TURN_STANDING; break;
+		case 'b': last = TURN_BACK - TURN_STANDING; break;
+		case ' ': continue;
+		default: throw "unknown character";
+		}
+		if (msg[0] == '2') {
+			result += last * 2;
+			msg++;
+		} else if (msg[0] == '\'') {
+			result -= last;
+			msg++;
+		} else {
+			result += last;
+		}
+	}
+	
+	return result;
+}

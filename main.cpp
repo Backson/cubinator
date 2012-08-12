@@ -133,9 +133,10 @@ int main(int argc, char *argv[])
 	static const Cube& f = Cube::TURN_FRONT;
 	static const Cube& b = Cube::TURN_BACK;
 	
-	/*auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
-	draw_cube(tperm);
-	draw_cube(tperm+tperm);*/
+	//auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
+	//draw_cube(tperm);
+	char* zperm_string = "M2 U' M2 U' M' U2 M2 U2 M' U2";
+	draw_cube(ExtendedCube::parse(zperm_string));
 	
 	draw_cube((Cube::parse("R U R' U'")));
 	
