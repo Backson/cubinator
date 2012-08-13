@@ -102,7 +102,7 @@ void draw_cube(const ExtendedCube& cube) {
 		ExtendedCube::TURN_Z*(-1)
 	};*/
 	
-	const ExtendedCube::ExtendedCube turns[6] = {
+	const ExtendedCube turns[6] = {
 		ExtendedCube::TURN_IDENTITY,
 		ExtendedCube::TURN_X*2,
 		ExtendedCube::TURN_X,
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 	
 	//auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
 	//draw_cube(tperm);
-	char* zperm_string = "M2 U' M2 U' M' U2 M2 U2 M' U2";
+	const char* zperm_string = "M2 U' M2 U' M' U2 M2 U2 M' U2";
 	draw_cube(ExtendedCube::parse(zperm_string));
 	
 	draw_cube((Cube::parse("B2  R'  D2  U'  F  D2  F'  U2  D  L2  R'  U  B'  L2  F  U2  L2  U  F  B'  D2  B2  L2  B'  R")));

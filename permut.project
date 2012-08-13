@@ -9,6 +9,8 @@
     <File Name="cube.h"/>
     <File Name="cube_ex.h"/>
     <File Name="cube_ex.cpp"/>
+    <File Name="solver.cpp"/>
+    <File Name="solver.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
