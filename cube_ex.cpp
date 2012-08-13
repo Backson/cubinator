@@ -79,6 +79,16 @@ ExtendedCube& ExtendedCube::operator*=(int exponent) {
 	return *this;
 }
 
+bool ExtendedCube::operator==(const ExtendedCube& that) {
+	if (Cube::operator!=(that)) return false;
+	if (this->m_middles!=that.m_middles) return false;
+	return true;
+}
+
+bool ExtendedCube::operator!=(const ExtendedCube& that) {
+	return !operator==(that);
+}
+
 ExtendedCube ExtendedCube::inverse() const {
 	Cube conv(*this);
 	ExtendedCube result(conv.inverse(), this->m_middles.inverse());

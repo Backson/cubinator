@@ -34,6 +34,9 @@ public:
 	ExtendedCube operator*(int exponent) const;
 	ExtendedCube& operator*=(int exponent);
 	
+	bool operator==(const ExtendedCube&);
+	bool operator!=(const ExtendedCube&);
+	
 	ExtendedCube inverse() const;
 	
 	const Perm<6>& middles() const { return m_middles; }

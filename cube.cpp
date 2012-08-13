@@ -95,6 +95,22 @@ Cube& Cube::operator*=(int exponent) {
 	return *this;
 }
 
+bool Cube::operator==(const Cube& that) {
+	if (this->m_edges != that.m_edges) return false;
+	if (this->m_corners != that.m_corners) return false;
+	for (int i = 0; i < 12; i++) {
+		if (this->m_edge_orients[i] != that.m_edge_orients[i]) return false;
+	}
+	for (int i = 0; i < 8; i++) {
+		if (this->m_corner_orients[i] != that.m_corner_orients[i]) return false;
+	}
+	return true;
+}
+
+bool Cube::operator!=(const Cube& that) {
+	return !operator==(that);
+}
+
 
 Cube Cube::inverse() const {
 	Cube result;
