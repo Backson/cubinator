@@ -4,6 +4,7 @@
 
 #include "permut.h"
 #include "cube_ex.h"
+#include "solver.h"
 
 template<int length>
 void print_perm(Perm<length> perm) {
@@ -135,15 +136,29 @@ int main(int argc, char *argv[])
 	
 	//auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
 	//draw_cube(tperm);
-	const char* zperm_string = "M2 U' M2 U' M' U2 M2 U2 M' U2";
-	draw_cube(ExtendedCube::parse(zperm_string));
+	//const char* zperm_string = "M2 U' M2 U' M' U2 M2 U2 M' U2";
+	//draw_cube(ExtendedCube::parse(zperm_string));
 	
-	draw_cube((Cube::parse("B2  R'  D2  U'  F  D2  F'  U2  D  L2  R'  U  B'  L2  F  U2  L2  U  F  B'  D2  B2  L2  B'  R")));
+	//draw_cube((Cube::parse("B2  R'  D2  U'  F  D2  F'  U2  D  L2  R'  U  B'  L2  F  U2  L2  U  F  B'  D2  B2  L2  B'  R")));
 	
-	draw_cube(ExtendedCube());
+	//draw_cube(ExtendedCube());
 	
-	printf("%i", Cube()==Cube());
+	//printf("%i", Cube()==Cube());
 	
+	MySolver solver;
+	Cube cube;
+	
+	cube += Cube::parse("R U F R' U'");
+	auto solution = solver.solve(cube);
+	
+	printf("Solution:\n");
+	for (auto iter = solution.turns.begin(); iter != solution.turns.end(); iter++) {
+		static const char* names[] = {
+			"R","R'","L","L'","F","F'","B","B'","U","U'","D","D'"
+		};
+		printf("%s ", names[*iter]);
+	}
+	printf("\n");
 	
 	return 0;
 }

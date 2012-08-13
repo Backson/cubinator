@@ -20,25 +20,14 @@ static const int TURN_ID_DOWN		= 10;
 static const int TURN_ID_DOWN_I		= 11;
 
 // convert turn id to corresponding Cube object
-Cube get_cube(int i) {
-	static const Cube cubes[] = {
-		Cube::TURN_RIGHT, Cube::TURN_RIGHT.inverse(),
-		Cube::TURN_LEFT, Cube::TURN_LEFT.inverse(),
-		Cube::TURN_FRONT, Cube::TURN_FRONT.inverse(),
-		Cube::TURN_BACK, Cube::TURN_BACK.inverse(),
-		Cube::TURN_UP, Cube::TURN_UP.inverse(),
-		Cube::TURN_DOWN, Cube::TURN_DOWN.inverse(),
-	};
-	
-	return cubes[i];
-}
+Cube get_cube(int i);
 
 // struct to hold a turn sequence produced by a solver
 struct TurnSequence {
 	std::vector<int> turns;
-	
-	TurnSequence inverse() const;
 };
+
+TurnSequence inverse(const TurnSequence&);
 
 // abstract class for all solvers
 class Solver {
