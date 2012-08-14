@@ -61,27 +61,33 @@ int get_value(const PositionTree* tree) {
 		{0,0,0},{2,0,0},{2,2,0},{0,2,0},
 		{0,0,2},{2,0,2},{2,2,2},{0,2,2},
 	};
-	
+	int edges = 0;
 	for (int i = 0; i < 12; i++) {
-		if (cube.edges().element(i) == ident.edges().element(i)) {
-			auto coord1 = edge_coordinates[cube.edges().element(i)];
-			auto coord2 = edge_coordinates[i];
-			result -= abs(coord1[0]-coord2[0])+abs(coord1[1]-coord2[1])+abs(coord1[2]-coord2[2]);
+		auto coord1 = edge_coordinates[cube.edges().element(i)];
+		auto coord2 = edge_coordinates[ident.edges().element(i)];
+		edges -= abs(coord1[0]-coord2[0])+abs(coord1[1]-coord2[1])+abs(coord1[2]-coord2[2]);
+		/*if (cube.edges().element(i) == ident.edges().element(i)) {
 			if (cube.edge_orients()[i] == ident.edge_orients()[i]) {
-				//result += 200;
+				edges += 200;
 			}
-		}
+		}*/
 	}
+	int corners = 0;
 	for (int i = 0; i < 8; i++) {
-		if (cube.corners().element(i) == ident.corners().element(i)) {
-			auto coord1 = edge_coordinates[cube.edges().element(i)];
-			auto coord2 = corner_coordinates[i];
-			result -= abs(coord1[0]-coord2[0])+abs(coord1[1]-coord2[1])+abs(coord1[2]-coord2[2]);
+		auto coord1 = corner_coordinates[cube.corners().element(i)];
+		auto coord2 = corner_coordinates[ident.corners().element(i)];
+		corners -= abs(coord1[0]-coord2[0])+abs(coord1[1]-coord2[1])+abs(coord1[2]-coord2[2]);
+		/*if (cube.corners().element(i) == ident.corners().element(i)) {
+
 			if (cube.corner_orients()[i] == ident.corner_orients()[i]) {
 				//result += 200;
 			}
-		}
+		}*/
 	}
+	corners /= 2;
+	edges /= 2;
+	result = edges < corners ? edges : corners;
+	return corners;
 }
 
 int get_value_broadsearch(const PositionTree* tree) {
@@ -122,6 +128,9 @@ public:
 TurnSequence MySolver::solve(const Cube& cube) {
 	PositionTree* root = new PositionTree(cube);
 	
+	if (root->cube == Cube::TURN_IDENTITY)
+		return TurnSequence();
+	
 	std::set<PositionTree*> positions;
 	positions.insert(root);
 	
@@ -130,13 +139,28 @@ TurnSequence MySolver::solve(const Cube& cube) {
 	while (true) {
 		current = *(positions.begin());
 		
+		printf("before: %ld: %+4d to %+4d\n", positions.size(), (*positions.rbegin())->value, current->value);
+		
+		/*for (auto iter = positions.rbegin(); iter != positions.rend(); iter++) {
+			if ((*iter)->value < current->value - 1) {
+				positions.erase(--iter.base());
+			} else {
+				break;
+			}
+		}
+		
+		printf("after:  %ld: %+4d to %+4d\n", positions.size(), (*positions.rbegin())->value, current->value);
+		*/
 		positions.erase(current);
+		
 		PositionTree* solution = NULL;
 		for (int i = 0; i < 12; i++) {
+			if (i == (current->turn % 2 ? current->turn + 1 : current->turn - 1))
+				continue;
 			PositionTree *branch = new PositionTree(current, i);
 			current->children[i] = branch;
 			positions.insert(branch);
-			if (branch->cube == Cube::TURN_IDENTITY)
+			if (branch->cube.corners() == Cube::TURN_IDENTITY.corners())
 				solution = branch;
 		}
 		if (solution) {
@@ -144,8 +168,6 @@ TurnSequence MySolver::solve(const Cube& cube) {
 			break;
 		}
 	}
-	
-	printf("%ld\n", positions.size());
 	
 	PositionTree* solution = current;
 	

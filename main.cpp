@@ -5,6 +5,7 @@
 #include "permut.h"
 #include "cube_ex.h"
 #include "solver.h"
+#include "ida_star_solver.h"
 
 template<int length>
 void print_perm(Perm<length> perm) {
@@ -145,10 +146,10 @@ int main(int argc, char *argv[])
 	
 	//printf("%i", Cube()==Cube());
 	
-	MySolver solver;
+	IdaStarSolver solver;
 	Cube cube;
 	
-	cube += Cube::parse("R U F R' U'");
+	cube += Cube::parse("B2  R'  D2  U'  F  D2");
 	auto solution = solver.solve(cube);
 	
 	printf("Solution:\n");

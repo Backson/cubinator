@@ -95,7 +95,7 @@ Cube& Cube::operator*=(int exponent) {
 	return *this;
 }
 
-bool Cube::operator==(const Cube& that) {
+bool Cube::operator==(const Cube& that) const {
 	if (this->m_edges != that.m_edges) return false;
 	if (this->m_corners != that.m_corners) return false;
 	for (int i = 0; i < 12; i++) {
@@ -107,7 +107,7 @@ bool Cube::operator==(const Cube& that) {
 	return true;
 }
 
-bool Cube::operator!=(const Cube& that) {
+bool Cube::operator!=(const Cube& that) const {
 	return !operator==(that);
 }
 

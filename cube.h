@@ -55,8 +55,8 @@ public:
 	Cube operator*(int exponent) const;
 	Cube& operator*=(int exponent);
 	
-	bool operator==(const Cube&);
-	bool operator!=(const Cube&);
+	bool operator==(const Cube&) const;
+	bool operator!=(const Cube&) const;
 	
 	const Perm<12>& edges() const { return m_edges; }
 	const Perm<8>& corners() const { return m_corners; }

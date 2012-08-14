@@ -11,6 +11,8 @@
     <File Name="cube_ex.cpp"/>
     <File Name="solver.cpp"/>
     <File Name="solver.h"/>
+    <File Name="ida_star_solver.cpp"/>
+    <File Name="ida_star_solver.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
