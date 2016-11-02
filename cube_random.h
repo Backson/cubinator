@@ -7,7 +7,7 @@
 #include "cube.h"
 
 template <int length, class RNG>
-Perm<length> get_random_perm(RNG rng) {
+Perm<length> get_random_perm(RNG &rng) {
 	int elements[length];
 	for (int i = 0; i < length; ++i)
 		elements[i] = i;
@@ -16,7 +16,7 @@ Perm<length> get_random_perm(RNG rng) {
 }
 
 template <class RNG>
-Cube get_random_cube(RNG rng) {
+Cube get_random_cube(RNG &rng) {
 	Perm<12> edges = get_random_perm<12>(rng);
 	Perm<8> corners = get_random_perm<8>(rng);
 	int eges_orient[12];
