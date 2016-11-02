@@ -22,6 +22,9 @@ public:
 	// which id does this permutation have?
 	uint64_t id() const;
 	
+	// the maximum id that can be created. equal to factorial(length)
+	static uint64_t maxid();
+	
 	// we don't dynamically allocate memory, so no destructor needed
 	~Perm() = default;
 	
@@ -51,6 +54,12 @@ public:
 	
 	// which Permutation reverses this one?
 	Perm inverse() const;
+	
+	// get the number of inversions
+	int inversions() const;
+	
+	// count, how many pieces are at their correct position
+	int correct() const;
 	
 	// get the parity of the permutation
 	int parity() const;
@@ -99,7 +108,7 @@ Perm<length>::Perm() {
 template<int length>
 Perm<length>::Perm(uint64_t id) {
 	bool visited[length];
-	memset(visited, 0, length * sizeof (uint8_t));
+	memset(visited, 0, length * sizeof (bool));
 	
 	for (int i = 0; i < length; i++) {
 		
@@ -164,6 +173,11 @@ uint64_t Perm<length>::id() const {
 }
 
 template<int length>
+uint64_t Perm<length>::maxid() {
+	return FACTORIALS[length];
+}
+
+template<int length>
 Perm<length> Perm<length>::operator+(const Perm& that) const {
 	Perm result;
 	
@@ -217,7 +231,7 @@ Perm<length> Perm<length>::inverse() const {
 }
 
 template<int length>
-int Perm<length>::parity() const {
+int Perm<length>::inversions() const {
 	int inversion_count = 0;
 	
 	for (int j = 0; j < length; j++) {
@@ -227,7 +241,24 @@ int Perm<length>::parity() const {
 		}
 	}
 	
-	return 1 - (inversion_count % 2) * 2;
+	return inversion_count;
+}
+
+template<int length>
+int Perm<length>::correct() const {
+	int correct_count = 0;
+	
+	for (int i = 0; i < length; i++) {
+		if (i == m_elements[i])
+			correct_count++;
+	}
+	
+	return correct_count;
+}
+
+template<int length>
+int Perm<length>::parity() const {
+	return 1 - (inversions() % 2) * 2;
 }
 
 #endif // permut_h

@@ -1,125 +1,87 @@
 #include "ida_star_solver.h"
 
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <vector>
 
-static int counter = -1;
-
-#define BIG_NUMBER (INT_MAX/2)
-
-int heuristic_cost(const Cube& cube) {
-	const Cube& ident = Cube::TURN_IDENTITY;
-	int result = 0;
-	
-	int edge_coordinates[12][3] = {
-		{0,0,1},{2,0,1},{2,2,1},{0,2,1},
-		{1,0,0},{2,1,0},{1,2,0},{0,1,0},
-		{1,0,2},{2,1,2},{1,2,2},{0,1,2}
-	};
-	
-	int corner_coordinates[8][3] = {
-		{0,0,0},{2,0,0},{2,2,0},{0,2,0},
-		{0,0,2},{2,0,2},{2,2,2},{0,2,2},
-	};
-	int edges = 0;
-	for (int i = 0; i < 12; i++) {
-		auto coord1 = edge_coordinates[cube.edges().element(i)];
-		auto coord2 = edge_coordinates[ident.edges().element(i)];
-		edges += abs(coord1[0]-coord2[0])+abs(coord1[1]-coord2[1])+abs(coord1[2]-coord2[2]);
-		/*if (cube.edges().element(i) == ident.edges().element(i)) {
-			if (cube.edge_orients()[i] == ident.edge_orients()[i]) {
-				edges += 200;
-			}
-		}*/
-	}
-	int corners = 0;
-	for (int i = 0; i < 8; i++) {
-		auto coord1 = corner_coordinates[cube.corners().element(i)];
-		auto coord2 = corner_coordinates[ident.corners().element(i)];
-		corners += abs(coord1[0]-coord2[0])+abs(coord1[1]-coord2[1])+abs(coord1[2]-coord2[2]);
-		/*if (cube.corners().element(i) == ident.corners().element(i)) {
-
-			if (cube.corner_orients()[i] == ident.corner_orients()[i]) {
-				//result += 200;
-			}
-		}*/
-	}
-
-	result = edges > corners ? edges : corners;
-	return result / 8;
+static int heuristic(const Cube &cube) {
+	return cube == Cube::TURN_IDENTITY ? 0 : 1;
 }
 
-struct solution_s {
-	TurnSequence solution;
-	int cost_limit;
+// used to track the state of the search algorithm
+struct SearchState {
+	// puzzle position at the current node
+	Cube cube;
+	// cost to get from the root to this node
+	int cost;
+	// estimated cost to get from this node to the target
+	int estimate;
+	// index of last turn from previous position
+	int last_turn;
+	// how many successors of this have already been tested
+	int index;
+	// minimum cost of all successors
+	int min;
 };
 
-solution_s depth_limited_search(const Cube& cube, solution_s sol, int start_cost) {
-	//printf("depth %ld: with start cost %d\n", sol.solution.turns.size(), start_cost);
-	counter++;
-	int old_estimated_cost = heuristic_cost(cube);
-	int minimum_cost = start_cost + heuristic_cost(cube);
-    if (minimum_cost > sol.cost_limit)
-        return {{}, minimum_cost};
-    if (cube == Cube::TURN_IDENTITY) {
-        //printf("got it!\n");
-		return sol;
-	}
-	
-	int last_turn = -1;
-	if (sol.solution.turns.size() > 0) {
-		last_turn = *sol.solution.turns.rbegin();
-	}
-	
-    int next_cost_limit = BIG_NUMBER;
-    for (int i = 0; i < 12; i++) {
-		Cube turn = get_cube(i);
-		Cube successor = cube + turn;
-		
-		int new_start_cost;
-		if (last_turn != -1 && i == last_turn - (last_turn % 2) * 2 + 1)
-			new_start_cost = BIG_NUMBER;
-		else
-			new_start_cost = start_cost - old_estimated_cost + heuristic_cost(successor) + 1;
-		
-		solution_s new_path(sol);
-		new_path.solution.turns.push_back(i);
-        solution_s result = depth_limited_search(successor, {new_path.solution, sol.cost_limit}, new_start_cost);
-		
-		TurnSequence solution = result.solution;
-		int new_cost_limit = result.cost_limit;
-		
-        if (solution.turns.size() > 0)
-            return {solution, new_cost_limit};
-        next_cost_limit = next_cost_limit < new_cost_limit ? next_cost_limit : new_cost_limit;
-	}
- 
-    return {{}, next_cost_limit};
-}
+void IdaStarSolver::solve(const Cube& cube) {
+	// depth limited search
+	int search_depth = heuristic(cube);
 
-TurnSequence IdaStarSolver::solve(const Cube& cube) {
-    int cost_limit = heuristic_cost(cube);
-	TurnSequence solution;
-	
-	int iterations = 0;
-	
-    while (true) {
-		
-		printf("Iteration %d:", ++iterations);
-		fflush(stdout);
-		counter = 0;
-		
-        auto result = depth_limited_search(cube, {solution, cost_limit}, 0);
-		solution = result.solution;
-		cost_limit = result.cost_limit;
-		printf(" %d nodes visited.\n", counter);
-		
-        if (solution.turns.size() > 0)
-            return solution;
-        if (cost_limit >= BIG_NUMBER) {
-			//printf("oh noes!\n");
-            return {};
+	// stack search state, so we don't have to use recursion
+	std::vector<SearchState> stack;
+	stack.push_back(SearchState{cube, 0, search_depth, -1, 0, 100});
+
+	// count how many nodes were touched (optional)
+	int node_counter = 1;
+
+	// loop until found
+	while (stack.back().cube != Cube::TURN_IDENTITY) {
+		auto &state = stack.back();
+		int cost = state.cost;
+		int estimate = state.estimate;
+		int total = cost + estimate;
+		if (total > search_depth && cost != 0) {
+			// if we stepped over the maximum search depth:
+			stack.pop_back();
+			stack.back().min = std::min(stack.back().min, total);
+			// optional: correct the cost estimate of the previous node
+			stack.back().estimate = std::max(stack.back().estimate, estimate - 1);
+		} else if (stack.back().index < (int) Cube::Metric::size()) {
+			// make another turn and add it to the stack
+			int index = stack.back().index++;
+			// don't check the inverse of the last turn
+			if ((stack.back().last_turn ^ index) == 1) {
+				continue;
+			}
+			// don't check the same turn 3 times in a row
+			if (stack.size() >= 2) {
+				int last_turn1 = stack[stack.size() - 1].last_turn;
+				int last_turn2 = stack[stack.size() - 2].last_turn;
+				if (last_turn1 == index && last_turn2 == index) {
+					continue;
+				}
+			}
+			const Cube next_cube = state.cube + Cube::Metric::get(index);
+			int next_cost = state.cost + 1;
+			stack.push_back(SearchState{next_cube, next_cost, heuristic(next_cube), index, 0, 100});
+			node_counter++;
+		} else if (state.cost == 0) {
+			// increase search depth
+			search_depth = state.min;
+			printf("search depth now %d (nodes touched: %d)\n", search_depth, node_counter);
+			state.index = 0;
+			state.min = 100;
+		} else {
+			int min = state.min;
+			stack.pop_back();
+			stack.back().min = std::min(stack.back().min, min);
 		}
+	}
+
+	// print result
+	for (int i = 1; i < (int) stack.size(); ++i) {
+		const char *str[] = { "R", "R'", "L", "L'", "F", "F'", "B", "B'", "U", "U'", "D", "D'" };
+		printf("%s ", str[stack[i].last_turn]);
 	}
 }

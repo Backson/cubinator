@@ -32,6 +32,17 @@ Cube::Cube(std::initializer_list<int> edges, std::initializer_list<int> corners,
 	}
 }
 
+Cube::Cube(Perm<12> edges, Perm<8> corners, int edge_orients[12], int corner_orients[8]) :
+	m_edges(edges), m_corners(corners)
+{
+	for (int i = 0; i < 12; i++) {
+		m_edge_orients[i] = edge_orients[i];
+	}
+	for (int i = 0; i < 8; i++) {
+		m_corner_orients[i] = corner_orients[i];
+	}
+}
+
 Cube& Cube::operator=(const Cube& that) {
 	m_edges = that.m_edges;
 	m_corners = that.m_corners;
@@ -41,6 +52,7 @@ Cube& Cube::operator=(const Cube& that) {
 	for (int i = 0; i < 8; i++) {
 		m_corner_orients[i] = that.m_corner_orients[i];
 	}
+	return *this;
 }
 
 Cube Cube::operator+(const Cube& that) const {
@@ -111,6 +123,24 @@ bool Cube::operator!=(const Cube& that) const {
 	return !operator==(that);
 }
 
+
+	
+int Cube::correct_edges() const {
+	int result = 0;
+	for (int i = 0; i < 12; i++) {
+		if (m_edges.element(i) == i && m_edge_orients[i] == 0)
+			result++;
+	}
+	return result;
+}
+int Cube::correct_corners() const {
+	int result = 0;
+	for (int i = 0; i < 8; i++) {
+		if (m_corners.element(i) == i && m_corner_orients[i] == 0)
+			result++;
+	}
+	return result;
+}
 
 Cube Cube::inverse() const {
 	Cube result;

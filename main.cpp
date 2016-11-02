@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <random>
 
-#include "permut.h"
+#include "cube.h"
 #include "cube_ex.h"
-#include "solver.h"
+#include "cube_random.h"
 #include "ida_star_solver.h"
 
 template<int length>
@@ -14,45 +14,9 @@ void print_perm(Perm<length> perm) {
 	printf("\n");
 }
 
-void print_cube(const Cube& cube) {
-	//printf("e ");
-	for (int i = 0; i < 12; i++)
-		printf("%c%1X ", cube.edge_orients()[i] ? '-' : '+', cube.edges().element(i));
-	
-	printf(" :  ");
-	
-	for (int i = 0; i < 8; i++) {
-		static const char cs[] = {'.','+','-'};
-		char c = cs[cube.corner_orients()[i]];
-		printf("%c%1X ", c, cube.corners().element(i));
-	}
-	
-	printf("\n");
-}
-
-void print_cube(const ExtendedCube& cube) {
-	//printf("e ");
-	for (int i = 0; i < 12; i++)
-		printf("%c%1X ", cube.edge_orients()[i] ? '-' : '+', cube.edges().element(i));
-	
-	printf(": ");
-	
-	for (int i = 0; i < 8; i++) {
-		static const char cs[] = {'.','+','-'};
-		char c = cs[cube.corner_orients()[i]];
-		printf("%c%1X ", c, cube.corners().element(i));
-	}
-	
-	printf(": ");
-	
-	for (int i = 0; i < 6; i++)
-		printf("%1X ", cube.middles().element(i));
-	
-	printf("\n");
-}
-
+/// visual ASCII representation of the top side of the cube
 void draw_up(const ExtendedCube& cube) {
-		static const char corner_stones[8][3] = {
+	static const char corner_stones[8][3] = {
 		{'w','o','b'},
 		{'w','b','r'},
 		{'w','r','g'},
@@ -76,33 +40,29 @@ void draw_up(const ExtendedCube& cube) {
 		{'y','o'}};
 	static const char middle_stones[6] = {'y','b','r','g','o','w'};
 	
-	auto stone1 = corner_stones[cube.corners().element(7)][(3-cube.corner_orients()[7]) % 3];
-	auto stone2 = edge_stones[cube.edges().element(10)][cube.edge_orients()[10]];
-	auto stone3 = corner_stones[cube.corners().element(6)][(3-cube.corner_orients()[6]) % 3];
-	printf(" %c %c %c \n", stone1, stone2, stone3);
-	
-	stone1 = edge_stones[cube.edges().element(11)][cube.edge_orients()[11]];
-	stone2 = middle_stones[cube.middles().element(0)];
-	stone3 = edge_stones[cube.edges().element(9)][cube.edge_orients()[9]];
-	printf(" %c %c %c \n", stone1, stone2, stone3);
-	
-	stone1 = corner_stones[cube.corners().element(4)][(3-cube.corner_orients()[4]) % 3];
-	stone2 = edge_stones[cube.edges().element(8)][cube.edge_orients()[8]];
-	stone3 = corner_stones[cube.corners().element(5)][(3-cube.corner_orients()[5]) % 3];
-	printf(" %c %c %c \n", stone1, stone2, stone3);
+	char stone[9];
+
+	stone[0] = corner_stones[cube.corners().element(7)][(3-cube.corner_orients()[7]) % 3];
+	stone[1] = edge_stones[cube.edges().element(10)][cube.edge_orients()[10]];
+	stone[2] = corner_stones[cube.corners().element(6)][(3-cube.corner_orients()[6]) % 3];
+
+	stone[3] = edge_stones[cube.edges().element(11)][cube.edge_orients()[11]];
+	stone[4] = middle_stones[cube.middles().element(0)];
+	stone[5] = edge_stones[cube.edges().element(9)][cube.edge_orients()[9]];
+
+	stone[6] = corner_stones[cube.corners().element(4)][(3-cube.corner_orients()[4]) % 3];
+	stone[7] = edge_stones[cube.edges().element(8)][cube.edge_orients()[8]];
+	stone[8] = corner_stones[cube.corners().element(5)][(3-cube.corner_orients()[5]) % 3];
+
+	printf(" %c %c %c \n", stone[0], stone[1], stone[2]);
+	printf(" %c %c %c \n", stone[3], stone[4], stone[5]);
+	printf(" %c %c %c \n", stone[6], stone[7], stone[8]);
 }
 
+/// visual ASCII representation of the whole cube
 void draw_cube(const ExtendedCube& cube) {
 	const char* side_names[6] = {
 	"UP", "DOWN", "FRONT", "RIGHT", "BACK", "LEFT"};
-	/*static const ExtendedCube::ExtendedCube turns[6] = {
-		ExtendedCube::TURN_IDENTITY,
-		ExtendedCube::TURN_X*2,
-		ExtendedCube::TURN_X*(-1),
-		ExtendedCube::TURN_Z*(-1),
-		ExtendedCube::TURN_Z*(-1),
-		ExtendedCube::TURN_Z*(-1)
-	};*/
 	
 	const ExtendedCube turns[6] = {
 		ExtendedCube::TURN_IDENTITY,
@@ -122,44 +82,34 @@ void draw_cube(const ExtendedCube& cube) {
 	}
 }
 
-int main(int argc, char *argv[])
-{
-	srand(time(NULL));
-	
-	static const Cube& r = Cube::TURN_RIGHT;
-	static const Cube& l = Cube::TURN_LEFT;
-	
-	static const Cube& u = Cube::TURN_UP;
-	static const Cube& d = Cube::TURN_DOWN;
-	
-	static const Cube& f = Cube::TURN_FRONT;
-	static const Cube& b = Cube::TURN_BACK;
-	
-	//auto tperm = r+u-r-u-r+f+r+r-u-r-u+r+u-r-f;
-	//draw_cube(tperm);
-	//const char* zperm_string = "M2 U' M2 U' M' U2 M2 U2 M' U2";
-	//draw_cube(ExtendedCube::parse(zperm_string));
-	
-	//draw_cube((Cube::parse("B2  R'  D2  U'  F  D2  F'  U2  D  L2  R'  U  B'  L2  F  U2  L2  U  F  B'  D2  B2  L2  B'  R")));
-	
-	//draw_cube(ExtendedCube());
-	
-	//printf("%i", Cube()==Cube());
-	
-	IdaStarSolver solver;
-	Cube cube;
-	
-	cube += Cube::parse("B2  R'  D2  U'  F  D2");
-	auto solution = solver.solve(cube);
-	
-	printf("Solution:\n");
-	for (auto iter = solution.turns.begin(); iter != solution.turns.end(); iter++) {
-		static const char* names[] = {
-			"R","R'","L","L'","F","F'","B","B'","U","U'","D","D'"
-		};
-		printf("%s ", names[*iter]);
+template <class RNG, class Cube>
+void shuffle(RNG *rng, Cube *cube, int n) {
+	static const std::array<Cube, 12> all_turns = {
+		Cube::TURN_RIGHT, Cube::TURN_RIGHT.inverse(),
+		Cube::TURN_LEFT, Cube::TURN_LEFT.inverse(),
+		Cube::TURN_FRONT, Cube::TURN_FRONT.inverse(),
+		Cube::TURN_BACK, Cube::TURN_BACK.inverse(),
+		Cube::TURN_UP, Cube::TURN_UP.inverse(),
+		Cube::TURN_DOWN, Cube::TURN_DOWN.inverse(),
+	};
+	std::uniform_int_distribution<> distr(0, all_turns.size() - 1);
+	for (int i = 0; i < n; ++i) {
+		const Cube &turn = all_turns[distr(*rng)];
+		*cube += turn;
 	}
-	printf("\n");
-	
+}
+
+int main(int argc, char *argv[]) {
+	std::default_random_engine rng;
+	rng.seed(42);
+
+	Cube cube = get_random_cube(rng);
+	draw_cube(cube);
+
+	IdaStarSolver solver;
+	printf("\nSolution:\n");
+	solver.solve(cube);
+
+	getchar();
 	return 0;
 }

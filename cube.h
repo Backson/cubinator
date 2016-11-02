@@ -23,6 +23,7 @@
 #include "permut.h"
 
 #include <initializer_list>
+#include <array>
 
 class Cube {
 public:
@@ -37,11 +38,28 @@ public:
 	
 	static const Cube TURN_FRONT;
 	static const Cube TURN_BACK;
+
+	class Metric {
+	public:
+		static int size() { return 12; }
+		static const Cube &get(int i) {
+			static const std::array<Cube, 12> all_turns = {
+				Cube::TURN_RIGHT, Cube::TURN_RIGHT.inverse(),
+				Cube::TURN_LEFT, Cube::TURN_LEFT.inverse(),
+				Cube::TURN_FRONT, Cube::TURN_FRONT.inverse(),
+				Cube::TURN_BACK, Cube::TURN_BACK.inverse(),
+				Cube::TURN_UP, Cube::TURN_UP.inverse(),
+				Cube::TURN_DOWN, Cube::TURN_DOWN.inverse(),
+			};
+			return all_turns[i];
+		}
+	};
 	
 	Cube();
 	Cube(const Cube& that) { this->operator=(that); }
 	Cube(std::initializer_list<int> edges, std::initializer_list<int> corners,
 		std::initializer_list<int> edge_orients, std::initializer_list<int> corner_orients);
+	Cube(Perm<12> edges, Perm<8> corners, int edge_orients[12], int corner_orients[8]);
 	~Cube() = default;
 	
 	Cube& operator=(const Cube&);
@@ -64,17 +82,20 @@ public:
 	const int* edge_orients() const { return m_edge_orients; }
 	const int* corner_orients() const { return m_corner_orients; }
 	
+	int correct_edges() const;
+	int correct_corners() const;
+	
 	Cube inverse() const;
 	
 	static Cube parse(const char*);
 
 private:
 
-Perm<12> m_edges;
-Perm<8> m_corners;
+	Perm<12> m_edges;
+	Perm<8> m_corners;
 
-int m_edge_orients[12];
-int m_corner_orients[8];
+	int m_edge_orients[12];
+	int m_corner_orients[8];
 
 };
 

@@ -1,12 +1,11 @@
-#ifndef ida_star_h
-#define ida_star_h
+#ifndef ida_star_solver_h
+#define ida_star_solver_h
 
-#include "solver.h"
+#include "cube.h"
 
-// first test solver
-class IdaStarSolver : public Solver {
+class IdaStarSolver {
 public:
-	TurnSequence solve(const Cube&);
+	void solve(const Cube &);
 };
 
-#endif // ida_star_h
+#endif // ida_star_solver_h
