@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <random>
+#include <functional>
 
 #include "cube.h"
 #include "cube_ex.h"
@@ -82,7 +83,53 @@ void draw_cube(const ExtendedCube& cube) {
 	}
 }
 
+void compute_heuristic(int n) {
+	int table[9];
+	for (int i = 0; i < 9; ++i)
+		table[i] = n;
+
+	std::function<int(const Cube &)> index = [](const Cube &cube) {
+		return cube.correct_corners();
+	};
+
+	std::function<void (int, Cube)> visitor = [&](int m, Cube cube) {
+		int ind = index(cube);
+		table[ind] = std::min(table[ind], m);
+	};
+	std::function<void (int, int, Cube)> search = [&](int n, int m, Cube cube) {
+		visitor(m, cube);
+		if (n == m) return;
+		for (int i = 0; i < Cube::Metric::size(); ++i) {
+			search(n, m + 1, cube + Cube::Metric::get(i));
+		}
+	};
+
+	search(n, 0, Cube::TURN_IDENTITY);
+
+	//for (int i = 0; i < 9; ++i) printf("%d: %d\n", i, table[i]);
+
+	int histo[20];
+	for (int i = 0; i < 20; ++i)
+		histo[i] = 0;
+
+	std::default_random_engine rng;
+	rng.seed(23);
+	for (int i = 0; i < 100000; ++i) {
+		Cube cube = get_random_cube(rng);
+		histo[table[index(cube)]]++;
+	}
+	
+	printf("\n");
+	for (int i = 0; i <= n; ++i)
+		printf("%d: %d\n", i, histo[i]);
+}
+
 int main(int argc, char *argv[]) {
+	compute_heuristic(6);
+	
+	getchar();
+	return 0;
+
 	std::default_random_engine rng;
 	rng.seed(42);
 
