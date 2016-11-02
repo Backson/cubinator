@@ -82,23 +82,6 @@ void draw_cube(const ExtendedCube& cube) {
 	}
 }
 
-template <class RNG, class Cube>
-void shuffle(RNG *rng, Cube *cube, int n) {
-	static const std::array<Cube, 12> all_turns = {
-		Cube::TURN_RIGHT, Cube::TURN_RIGHT.inverse(),
-		Cube::TURN_LEFT, Cube::TURN_LEFT.inverse(),
-		Cube::TURN_FRONT, Cube::TURN_FRONT.inverse(),
-		Cube::TURN_BACK, Cube::TURN_BACK.inverse(),
-		Cube::TURN_UP, Cube::TURN_UP.inverse(),
-		Cube::TURN_DOWN, Cube::TURN_DOWN.inverse(),
-	};
-	std::uniform_int_distribution<> distr(0, all_turns.size() - 1);
-	for (int i = 0; i < n; ++i) {
-		const Cube &turn = all_turns[distr(*rng)];
-		*cube += turn;
-	}
-}
-
 int main(int argc, char *argv[]) {
 	std::default_random_engine rng;
 	rng.seed(42);
