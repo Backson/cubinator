@@ -84,12 +84,22 @@ void draw_cube(const ExtendedCube& cube) {
 }
 
 void compute_heuristic(int n) {
-	int table[9];
-	for (int i = 0; i < 9; ++i)
+	int table_size = 0x8000;
+	int *table = new int[table_size];
+	for (int i = 0; i < table_size; ++i)
 		table[i] = n;
 
 	std::function<int(const Cube &)> index = [](const Cube &cube) {
-		return cube.correct_corners();
+		unsigned int hash = 0xdf9af575;
+		for (int i = 0; i < 8; ++i){
+			hash = cube.corners().element(i) + (hash << 6) + (hash << 16) - hash;
+			hash = cube.corner_orients()[i] + (hash << 6) + (hash << 16) - hash;
+		}
+		for (int i = 0; i < 12; ++i){
+			hash = cube.edges().element(i) + (hash << 6) + (hash << 16) - hash;
+			hash = cube.edge_orients()[i] + (hash << 6) + (hash << 16) - hash;
+		}
+		return (hash % 0x8000);
 	};
 
 	std::function<void (int, Cube)> visitor = [&](int m, Cube cube) {
@@ -116,16 +126,20 @@ void compute_heuristic(int n) {
 	rng.seed(23);
 	for (int i = 0; i < 100000; ++i) {
 		Cube cube = get_random_cube(rng);
-		histo[table[index(cube)]]++;
+		int ind = index(cube);
+		int table_entry = table[ind];
+		histo[table_entry]++;
 	}
 	
 	printf("\n");
 	for (int i = 0; i <= n; ++i)
 		printf("%d: %d\n", i, histo[i]);
+
+	delete[] table;
 }
 
 int main(int argc, char *argv[]) {
-	compute_heuristic(6);
+	compute_heuristic(8);
 	
 	getchar();
 	return 0;
