@@ -106,15 +106,16 @@ void compute_heuristic(int n) {
 		int ind = index(cube);
 		table[ind] = std::min(table[ind], m);
 	};
-	std::function<void (int, int, Cube)> search = [&](int n, int m, Cube cube) {
+	std::function<void (int, int, Cube, int)> search = [&](int n, int m, Cube cube, int last_turn) {
 		visitor(m, cube);
 		if (n == m) return;
 		for (int i = 0; i < Cube::Metric::size(); ++i) {
-			search(n, m + 1, cube + Cube::Metric::get(i));
+			if (i != (last_turn ^ 1))
+				search(n, m + 1, cube + Cube::Metric::get(i), i);
 		}
 	};
 
-	search(n, 0, Cube::TURN_IDENTITY);
+	search(n, 0, Cube::TURN_IDENTITY, -1);
 
 	//for (int i = 0; i < 9; ++i) printf("%d: %d\n", i, table[i]);
 
@@ -139,7 +140,7 @@ void compute_heuristic(int n) {
 }
 
 int main(int argc, char *argv[]) {
-	compute_heuristic(8);
+	compute_heuristic(6);
 	
 	getchar();
 	return 0;
