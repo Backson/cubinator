@@ -83,27 +83,30 @@ void draw_cube(const ExtendedCube& cube) {
 	}
 }
 
-void compute_heuristic(int n) {
-	int table_size = 0x8000;
+unsigned int hash_function(const Cube &cube) {
+	unsigned int hash = 0xdf9af575;
+
+	for (int i = 0; i < 8; ++i){
+		hash = cube.corners().element(i) + (hash << 6) + (hash << 16) - hash;
+		hash = cube.corner_orients()[i] + (hash << 6) + (hash << 16) - hash;
+	}
+	for (int i = 0; i < 12; ++i){
+		hash = cube.edges().element(i) + (hash << 6) + (hash << 16) - hash;
+		hash = cube.edge_orients()[i] + (hash << 6) + (hash << 16) - hash;
+	}
+	return hash;
+};
+
+void compute_heuristic(int n, int table_bits) {
+	int table_size = 1 << table_bits;
+
+	printf("\nn = %2d, s = 0x%05x...\n", n, table_size);
 	int *table = new int[table_size];
 	for (int i = 0; i < table_size; ++i)
-		table[i] = n;
-
-	std::function<int(const Cube &)> index = [](const Cube &cube) {
-		unsigned int hash = 0xdf9af575;
-		for (int i = 0; i < 8; ++i){
-			hash = cube.corners().element(i) + (hash << 6) + (hash << 16) - hash;
-			hash = cube.corner_orients()[i] + (hash << 6) + (hash << 16) - hash;
-		}
-		for (int i = 0; i < 12; ++i){
-			hash = cube.edges().element(i) + (hash << 6) + (hash << 16) - hash;
-			hash = cube.edge_orients()[i] + (hash << 6) + (hash << 16) - hash;
-		}
-		return (hash % 0x8000);
-	};
+		table[i] = n + 1;
 
 	std::function<void (int, Cube)> visitor = [&](int m, Cube cube) {
-		int ind = index(cube);
+		int ind = hash_function(cube) % table_size;
 		table[ind] = std::min(table[ind], m);
 	};
 	std::function<void (int, int, Cube, int)> search = [&](int n, int m, Cube cube, int last_turn) {
@@ -119,41 +122,48 @@ void compute_heuristic(int n) {
 
 	//for (int i = 0; i < 9; ++i) printf("%d: %d\n", i, table[i]);
 
-	int histo[20];
-	for (int i = 0; i < 20; ++i)
+	int histo[30];
+	for (int i = 0; i < 30; ++i)
 		histo[i] = 0;
 
 	std::default_random_engine rng;
-	rng.seed(23);
-	for (int i = 0; i < 100000; ++i) {
+	rng.seed(53);
+	for (int i = 0; i < 1000000; ++i) {
 		Cube cube = get_random_cube(rng);
-		int ind = index(cube);
+		int ind = hash_function(cube) % table_size;
 		int table_entry = table[ind];
 		histo[table_entry]++;
 	}
+
+	int histo_heuristic_costs[30];
+	for (int i = 0; i < 30; ++i)
+		histo_heuristic_costs[i] = 0;
+
+	// dump the table into a file
+	char filename[100];
+	sprintf(filename, "table_%d_%d.txt", n, table_bits);
+	FILE *file = fopen(filename, "w");
+	for (int i = 0; i < table_size; ++i) {
+		histo_heuristic_costs[table[i]]++;
+		fprintf(file, "%d, ", table[i]);
+		if ((i + 1) % 20 == 0)
+			fprintf(file, "\n");
+	}
+	fclose(file);
 	
+	// print histogram of random scrambles
 	printf("\n");
-	for (int i = 0; i <= n; ++i)
-		printf("%d: %d\n", i, histo[i]);
+	for (int i = 0; i <= n + 1; ++i)
+		printf("%2d: %6d  %6d\n", i, histo[i], histo_heuristic_costs[i]);
 
 	delete[] table;
 }
 
 int main(int argc, char *argv[]) {
-	compute_heuristic(6);
-	
-	getchar();
-	return 0;
+	//std::default_random_engine rng;
+	//rng.seed(42);
 
-	std::default_random_engine rng;
-	rng.seed(42);
-
-	Cube cube = get_random_cube(rng);
-	draw_cube(cube);
-
-	IdaStarSolver solver;
-	printf("\nSolution:\n");
-	solver.solve(cube);
+	compute_heuristic(8, 15);
 
 	getchar();
 	return 0;
