@@ -4,10 +4,6 @@
 #include <cstdlib>
 #include <vector>
 
-static int heuristic(const Cube &cube) {
-	return cube == Cube::TURN_IDENTITY ? 0 : 1;
-}
-
 // used to track the state of the search algorithm
 struct SearchState {
 	// puzzle position at the current node
@@ -84,4 +80,5 @@ void IdaStarSolver::solve(const Cube& cube) {
 		const char *str[] = { "R", "R'", "L", "L'", "F", "F'", "B", "B'", "U", "U'", "D", "D'" };
 		printf("%s ", str[stack[i].last_turn]);
 	}
+	printf("\n\n");
 }

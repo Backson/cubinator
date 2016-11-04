@@ -83,25 +83,44 @@ void draw_cube(const ExtendedCube& cube) {
 	}
 }
 
+int dumb_heuristic(const Cube &cube) {
+	return cube == Cube::TURN_IDENTITY ? 0 : 1;
+}
+
+static int *table = nullptr;
+static unsigned int table_size = 0;
+
 unsigned int hash_function(const Cube &cube) {
 	unsigned int hash = 0xdf9af575;
 
 	for (int i = 0; i < 8; ++i){
 		hash = cube.corners().element(i) + (hash << 6) + (hash << 16) - hash;
 		hash = cube.corner_orients()[i] + (hash << 6) + (hash << 16) - hash;
+		hash = (hash << 1) | (hash >> 31);
 	}
 	for (int i = 0; i < 12; ++i){
 		hash = cube.edges().element(i) + (hash << 6) + (hash << 16) - hash;
 		hash = cube.edge_orients()[i] + (hash << 6) + (hash << 16) - hash;
+		hash = (hash << 1) | (hash >> 31);
 	}
+	//hash = hash << 4 | (cube.corners().inversions() & 0x3) << 2 | (cube.edge_orients()[0] & 0x1) << 1 | cube.edge_orients()[2] & 0x1;
 	return hash;
 };
 
-void compute_heuristic(int n, int table_bits) {
-	int table_size = 1 << table_bits;
+int smart_heuristic(const Cube &cube) {
+	unsigned int hash = hash_function(cube);
+	int result = table[hash % table_size];
+	return result;
+}
 
-	printf("\nn = %2d, s = 0x%05x...\n", n, table_size);
-	int *table = new int[table_size];
+void compute_heuristic(int n, int table_bits) {
+	table_size = 1 << table_bits;
+
+	if (table != nullptr) delete[] table;
+	table = new int[table_size];
+
+	printf("n = %2d, s = 0x%05x...\n", n, table_size);
+	
 	for (int i = 0; i < table_size; ++i)
 		table[i] = n + 1;
 
@@ -152,19 +171,31 @@ void compute_heuristic(int n, int table_bits) {
 	fclose(file);
 	
 	// print histogram of random scrambles
-	printf("\n");
 	for (int i = 0; i <= n + 1; ++i)
 		printf("%2d: %6d  %6d\n", i, histo[i], histo_heuristic_costs[i]);
-
-	delete[] table;
+	printf("\n");
 }
 
 int main(int argc, char *argv[]) {
-	//std::default_random_engine rng;
-	//rng.seed(42);
+	std::default_random_engine rng;
+	rng.seed(42);
 
-	compute_heuristic(8, 15);
+	compute_heuristic(7, 16);
 
+	Cube cube1 = get_random_cube(rng, 7);
+	Cube cube2 = get_random_cube(rng, 10);
+	
+	IdaStarSolver dumb_solver(&dumb_heuristic);
+	IdaStarSolver smart_solver(&smart_heuristic);
+
+	printf("dumb solver:\n");
+	dumb_solver.solve(cube1);
+	printf("smart solver:\n");
+	smart_solver.solve(cube1);
+	printf("smart solver, harder cube:\n");
+	smart_solver.solve(cube2);
+
+	if (table != nullptr) delete[] table;
 	getchar();
 	return 0;
 }
