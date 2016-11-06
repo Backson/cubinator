@@ -4,28 +4,12 @@
 #include <cstdlib>
 #include <vector>
 
-// used to track the state of the search algorithm
-struct SearchState {
-	// puzzle position at the current node
-	Cube cube;
-	// cost to get from the root to this node
-	int cost;
-	// estimated cost to get from this node to the target
-	int estimate;
-	// index of last turn from previous position
-	int last_turn;
-	// how many successors of this have already been tested
-	int index;
-	// minimum cost of all successors
-	int min;
-};
-
 void IdaStarSolver::solve(const Cube& cube) {
 	// depth limited search
 	int search_depth = heuristic(cube);
 
 	// stack search state, so we don't have to use recursion
-	std::vector<SearchState> stack;
+	stack.clear();
 	stack.push_back(SearchState{cube, 0, search_depth, -1, 0, 100});
 
 	// count how many nodes were touched (optional)
@@ -41,7 +25,6 @@ void IdaStarSolver::solve(const Cube& cube) {
 			// if we stepped over the maximum search depth:
 			stack.pop_back();
 			stack.back().min = std::min(stack.back().min, total);
-			// optional: correct the cost estimate of the previous node
 			stack.back().estimate = std::max(stack.back().estimate, estimate - 1);
 		} else if (stack.back().index < (int) Cube::Metric::size()) {
 			// make another turn and add it to the stack
@@ -72,13 +55,21 @@ void IdaStarSolver::solve(const Cube& cube) {
 			int min = state.min;
 			stack.pop_back();
 			stack.back().min = std::min(stack.back().min, min);
+			stack.back().estimate = std::max(stack.back().estimate, estimate - 1);
 		}
 	}
+}
 
-	// print result
+void IdaStarSolver::print_solution() {
+	int num = get_solution_turn_number();
+	printf("%d turns: ", num);
 	for (int i = 1; i < (int) stack.size(); ++i) {
 		const char *str[] = { "R", "R'", "L", "L'", "F", "F'", "B", "B'", "U", "U'", "D", "D'" };
 		printf("%s ", str[stack[i].last_turn]);
 	}
-	printf("\n\n");
+	printf("\n");
+}
+
+int IdaStarSolver::get_solution_turn_number() {
+	return stack.size() - 1;
 }
