@@ -84,6 +84,8 @@ public:
 	
 	int correct_edges() const;
 	int correct_corners() const;
+
+	bool solvable() const;
 	
 	Cube inverse() const;
 	

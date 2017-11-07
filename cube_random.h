@@ -38,8 +38,8 @@ Cube get_random_cube(RNG &rng) {
 	// eliminate unsolvable cubes
 	if (edges.parity() != corners.parity())
 		edges.swap(0, 1);
-	eges_orient[0] = 1 - edges_orient_sum % 2;
-	corners_orient[0] = 2 - corners_orient_sum % 3;
+	eges_orient[0] = (eges_orient[0] - edges_orient_sum % 2 + 2) % 2;
+	corners_orient[0] = (corners_orient[0] - corners_orient_sum % 3 + 3) % 3;
 	return Cube(edges, corners, eges_orient, corners_orient);
 }
 

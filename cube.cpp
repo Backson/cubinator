@@ -142,6 +142,27 @@ int Cube::correct_corners() const {
 	return result;
 }
 
+bool Cube::solvable() const {
+	if (m_edges.parity() != m_corners.parity())
+		return false;
+
+	int corners_sum = 0;
+	for (int i = 0; i < 8; ++i) {
+		corners_sum += m_corner_orients[i];
+	}
+	if (corners_sum % 3 != 0)
+		return false;
+
+	int edges_sum = 0;
+	for (int i = 0; i < 12; ++i) {
+		edges_sum += m_edge_orients[i];
+	}
+	if (edges_sum % 2 != 0)
+		return false;
+
+	return true;
+}
+
 Cube Cube::inverse() const {
 	Cube result;
 	
