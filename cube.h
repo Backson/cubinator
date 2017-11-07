@@ -59,7 +59,7 @@ public:
 	Cube(const Cube& that) { this->operator=(that); }
 	Cube(std::initializer_list<int> edges, std::initializer_list<int> corners,
 		std::initializer_list<int> edge_orients, std::initializer_list<int> corner_orients);
-	Cube(Perm<12> edges, Perm<8> corners, int edge_orients[12], int corner_orients[8]);
+	Cube(Perm<12> edges, Perm<8> corners, const int edge_orients[12], const int corner_orients[8]);
 	~Cube() = default;
 	
 	Cube& operator=(const Cube&);
