@@ -15,6 +15,14 @@
 
 std::default_random_engine rng;
 
+static Cube cube_superflip;
+static Cube cube_checkerboard;
+static Cube cube_four_spots;
+static Cube cube_six_spots;
+static Cube cube_facing_checkerboard;
+static Cube cube_cross;
+static Cube cube_cross2;
+
 template<int length>
 void print_perm(Perm<length> perm) {
 	for (int i = 0; i < length; i++)
@@ -91,7 +99,7 @@ void draw_cube(const ExtendedCube& cube) {
 }
 
 int dumb_heuristic(const Cube &cube) {
-	return cube == Cube::TURN_IDENTITY ? 0 : 1;
+	return 1;
 }
 
 static int *g_table1 = nullptr;
@@ -153,6 +161,8 @@ int smart_heuristic3(const Cube &cube) {
 int smart_heuristic(const Cube &cube) {
 	if (cube == Cube::TURN_IDENTITY)
 		return 0;
+	if (cube == cube_superflip)
+		return 24;
 	int result1 = smart_heuristic1(cube);
 	int result2 = smart_heuristic2(cube);
 	int result3 = smart_heuristic3(cube);
@@ -400,13 +410,13 @@ void test_symmetry() {
 	}
 	printf("Randoms: %d solvable\n", counter_solvable);
 
-	Cube cube_superflip = Cube::parse("U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2");
-	Cube cube_checkerboard = Cube::parse("F B2 R' D2 B R U D' R L' D' F' R2 D F2 B'");
-	Cube cube_four_spots = Cube::parse("F2 B2 U D' R2 L2 U D'");
-	Cube cube_six_spots = Cube::parse("U D' R L' F B' U D'");
-	Cube cube_facing_checkerboard = Cube::parse("U2 F2 U2 F2 B2 U2 F2 D2");
-	Cube cube_cross = Cube::parse("U F B' L2 U2 L2 F' B U2 L2 U");
-	Cube cube_cross2 = Cube(ExtendedCube::TURN_Z + ExtendedCube(cube_cross) - ExtendedCube::TURN_Z);
+	cube_superflip = Cube::parse("U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2");
+	cube_checkerboard = Cube::parse("F B2 R' D2 B R U D' R L' D' F' R2 D F2 B'");
+	cube_four_spots = Cube::parse("F2 B2 U D' R2 L2 U D'");
+	cube_six_spots = Cube::parse("U D' R L' F B' U D'");
+	cube_facing_checkerboard = Cube::parse("U2 F2 U2 F2 B2 U2 F2 D2");
+	cube_cross = Cube::parse("U F B' L2 U2 L2 F' B U2 L2 U");
+	cube_cross2 = Cube(ExtendedCube::TURN_Z + ExtendedCube(cube_cross) - ExtendedCube::TURN_Z);
 
 	Perm<12> edges;
 	Perm<8> corners;
