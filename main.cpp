@@ -13,6 +13,8 @@
 #include "cube_random.h"
 #include "ida_star_solver.h"
 
+std::default_random_engine rng;
+
 template<int length>
 void print_perm(Perm<length> perm) {
 	for (int i = 0; i < length; i++)
@@ -149,6 +151,8 @@ int smart_heuristic3(const Cube &cube) {
 }
 
 int smart_heuristic(const Cube &cube) {
+	if (cube == Cube::TURN_IDENTITY)
+		return 0;
 	int result1 = smart_heuristic1(cube);
 	int result2 = smart_heuristic2(cube);
 	int result3 = smart_heuristic3(cube);
@@ -320,28 +324,33 @@ void load_heuristic(int n, int table_bits) {
 	}
 }
 
-int main(int argc, char *argv[]) {
-	std::default_random_engine rng;
-	rng.seed(42);
-	
+Cube conjugate(const Cube &cube, const Cube &other) {
+	return other + cube - other;
+}
+
+void test_solver() {
 	bool load = true;
 	int precomputed_depth = 9;
 	int table_size_bits = 24;
 
+	printf("producing lookup table...");
+	fflush(stdout);
 	if (load) {
 		load_heuristic(precomputed_depth, table_size_bits);
-	} else {
+	}
+	else {
 		auto start = std::chrono::high_resolution_clock::now();
 		compute_heuristic(precomputed_depth, table_size_bits, true);
 		auto stop = std::chrono::high_resolution_clock::now();
 		printf("%d ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
 	}
+	printf(" done.\n");
 
 	heuristic_statistic();
 
-	Cube cube1 = get_random_cube(rng, 7);
-	Cube cube2 = get_random_cube(rng, 15);
-	
+	Cube cube1 = get_random_cube(rng, 5);
+	Cube cube2 = get_random_cube(rng, 17);
+
 	IdaStarSolver dumb_solver(&dumb_heuristic);
 	IdaStarSolver smart_solver(&smart_heuristic);
 
@@ -349,17 +358,118 @@ int main(int argc, char *argv[]) {
 	dumb_solver.solve(cube1);
 	dumb_solver.print_solution();
 	printf("\n");
+	if (cube1 + dumb_solver.get_solution() == Cube::TURN_IDENTITY) {
+		printf("Solution ok.\n");
+	}
+	else {
+		printf("Solution not ok.\n");
+	}
+	printf("\n");
 
 	printf("smart solver:\n");
 	smart_solver.solve(cube1);
 	smart_solver.print_solution();
+	printf("\n");
+	if (cube1 + smart_solver.get_solution() == Cube::TURN_IDENTITY) {
+		printf("Solution ok.\n");
+	}
+	else {
+		printf("Solution not ok.\n");
+	}
 	printf("\n");
 
 	printf("smart solver, harder cube:\n");
 	smart_solver.solve(cube2);
 	smart_solver.print_solution();
 	printf("\n");
-	
+	if (cube2 + smart_solver.get_solution() == Cube::TURN_IDENTITY) {
+		printf("Solution ok.\n");
+	}
+	else {
+		printf("Solution not ok.\n");
+	}
+	printf("\n");
+}
+
+void test_symmetry() {
+	int counter_solvable = 0;
+	for (int i = 0; i < 1000000; ++i) {
+		Cube cube = get_random_cube(rng);
+		if (cube.solvable())
+			counter_solvable++;
+	}
+	printf("Randoms: %d solvable\n", counter_solvable);
+
+	Cube cube_superflip = Cube::parse("U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2");
+	Cube cube_checkerboard = Cube::parse("F B2 R' D2 B R U D' R L' D' F' R2 D F2 B'");
+	Cube cube_four_spots = Cube::parse("F2 B2 U D' R2 L2 U D'");
+	Cube cube_six_spots = Cube::parse("U D' R L' F B' U D'");
+	Cube cube_facing_checkerboard = Cube::parse("U2 F2 U2 F2 B2 U2 F2 D2");
+	Cube cube_cross = Cube::parse("U F B' L2 U2 L2 F' B U2 L2 U");
+	Cube cube_cross2 = Cube(ExtendedCube::TURN_Z + ExtendedCube(cube_cross) - ExtendedCube::TURN_Z);
+
+	Perm<12> edges;
+	Perm<8> corners;
+	int edge_orients[] = { 0,0,0,0,0,0,0,0,0,0,0,0 };
+	int corner_orients[] = { 0,0,0,0,0,0,0,0 };
+
+	edges = Perm<12>();
+	edges.swap(C_UL, C_UR);
+	edges.swap(C_DL, C_DR);
+	edges.swap(C_FL, C_FR);
+	edges.swap(C_BL, C_BR);
+	corners = Perm<8>();
+	corners.swap(C_ULF, C_UFR);
+	corners.swap(C_UBL, C_URB);
+	corners.swap(C_DFL, C_DRF);
+	corners.swap(C_DLB, C_DBR);
+	Cube cube_mirror(edges, corners, edge_orients, corner_orients);
+
+	draw_cube(cube_mirror);
+
+	printf("Mirror: %s\n", (cube_mirror.solvable() ? "solvable" : "not solvable"));
+	printf("Identity: %s\n", (Cube::TURN_IDENTITY.solvable() ? "solvable" : "not solvable"));
+	printf("Left: %s\n", (Cube::TURN_LEFT.solvable() ? "solvable" : "not solvable"));
+	printf("Right: %s\n", (Cube::TURN_RIGHT.solvable() ? "solvable" : "not solvable"));
+	printf("Up: %s\n", (Cube::TURN_UP.solvable() ? "solvable" : "not solvable"));
+	printf("Down: %s\n", (Cube::TURN_DOWN.solvable() ? "solvable" : "not solvable"));
+	printf("Superflip: %s\n", (cube_superflip.solvable() ? "solvable" : "not solvable"));
+
+	Cube cube_symmetry = cube_mirror;
+
+	draw_cube(cube_symmetry);
+
+	printf("Symmetry: %s\n", (cube_symmetry.solvable() ? "solvable" : "not solvable"));
+
+	for (int i = 0; i < 12; ++i) {
+		Cube cube = conjugate(Cube::Metric::get(i), cube_symmetry);
+		for (int j = 0; j < 12; ++j) {
+			if (cube == Cube::Metric::get(j)) {
+				printf("1");
+			}
+			else {
+				printf("0");
+			}
+		}
+		printf("\n");
+	}
+
+	int counter_symmetry = 0;
+	for (int i = 0; i < 1000000; ++i) {
+		Cube cube = get_random_cube(rng);
+		if (cube_symmetry + cube == cube + cube_symmetry) {
+			counter_symmetry++;
+		}
+	}
+	printf("Symmetry: %d\n", counter_symmetry);
+}
+
+int main(int argc, char *argv[]) {
+	rng.seed(42);
+
+	//test_symmetry();
+	test_solver();
+
 	if (g_table1 != nullptr) delete[] g_table1;
 	if (g_table2 != nullptr) delete[] g_table2;
 	if (g_table3 != nullptr) delete[] g_table3;

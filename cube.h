@@ -1,6 +1,28 @@
 #ifndef cube_h
 #define cube_h
 
+#define C_FL 0
+#define C_FR 1
+#define C_BR 2
+#define C_BL 3
+#define C_DF 4
+#define C_DR 5
+#define C_DB 6
+#define C_DL 7
+#define C_UF 8
+#define C_UR 9
+#define C_UB 10
+#define C_UL 11
+
+#define C_DFL 0
+#define C_DRF 1
+#define C_DBR 2
+#define C_DLB 3
+#define C_ULF 4
+#define C_UFR 5
+#define C_URB 6
+#define C_UBL 7
+
 #define TURN_RIGHT_INITIALIZER \
 	{ 0, 5, 9, 3, 4, 2, 6, 7, 8, 1,10,11}, {0,2,6,3,4,1,5,7},\
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0,1,2,0,0,2,1,0}

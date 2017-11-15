@@ -10,6 +10,7 @@ public:
 	IdaStarSolver(int(*heuristic)(const Cube &)) : heuristic(heuristic) {}
 	void solve(const Cube &);
 	void print_solution();
+	Cube get_solution();
 	int get_solution_turn_number();
 private:
 	// used to track the state of the search algorithm
