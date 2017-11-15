@@ -7,7 +7,8 @@
 
 class IdaStarSolver {
 public:
-	IdaStarSolver(int(*heuristic)(const Cube &)) : heuristic(heuristic) {}
+	IdaStarSolver(int(*heuristic)(const Cube &));
+	IdaStarSolver(int(*heuristic)(const Cube &), bool(*condition)(const Cube &));
 	void solve(const Cube &);
 	void print_solution();
 	Cube get_solution();
@@ -31,6 +32,7 @@ private:
 
 	std::vector<SearchState> stack;
 	int(*heuristic)(const Cube &);
+	bool(*condition)(const Cube &);
 };
 
 #endif // ida_star_solver_h

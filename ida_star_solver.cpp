@@ -6,6 +6,17 @@
 
 #include "word.h"
 
+IdaStarSolver::IdaStarSolver(int(*heuristic)(const Cube &))
+	: heuristic(heuristic), condition(nullptr)
+{
+	condition = [](const Cube &cube) { return cube == Cube::TURN_IDENTITY; };
+}
+IdaStarSolver::IdaStarSolver(int(*heuristic)(const Cube &), bool(*condition)(const Cube &))
+	: heuristic(heuristic), condition(condition)
+{
+	// nothing
+}
+
 void IdaStarSolver::solve(const Cube& cube) {
 	// depth limited search
 	int search_depth = heuristic(cube);
@@ -19,7 +30,7 @@ void IdaStarSolver::solve(const Cube& cube) {
 	int node_counter = 1;
 
 	// loop until found
-	while (stack.back().cube != Cube::TURN_IDENTITY) {
+	while (!condition(stack.back().cube)) {
 		auto &state = stack.back();
 		int cost = state.cost;
 		int estimate = state.estimate;
