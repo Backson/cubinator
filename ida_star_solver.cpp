@@ -36,42 +36,39 @@ void IdaStarSolver::solve(const Cube& cube) {
 		int estimate = state.estimate;
 		int total = cost + estimate;
 
-		if (total > search_depth && stack.size() > 1) {
-			// if we stepped over the maximum search depth:
+		if (stack.size() > 1 && total > search_depth) {
+			// we stepped over the maximum search depth
 			stack.pop_back();
 			stack.back().min = std::min(stack.back().min, total);
-			stack.back().estimate = std::max(stack.back().estimate, estimate - cost);
-			continue;
 		}
-		
-		if (stack.back().index < (int) WORD_NUM) {
+		else if (stack.back().index < (int) WORD_NUM) {
 			// make another turn and add it to the stack
 			int index = stack.back().index++;
 			// don't check the inverse of the last turn or similar things
-			if (stack.back().last_turn < 0 || !can_words_be_switched(stack.back().last_turn, index)) {
-				int next_cost = state.cost + get_word_cost(index, METRIC_QUARTER_TURN);
-				if (next_cost > search_depth)
-					continue;
-				const Cube next_cube = state.cube + get_word_cube(index);
-				int next_estimate = heuristic(next_cube);
-				next_estimate = std::max(next_estimate, estimate - cost);
-				stack.push_back(SearchState{ next_cube, next_cost, heuristic(next_cube), index, 0, 100 });
-				node_counter++;
+			if (stack.size() == 1 || !can_words_be_switched(stack.back().last_turn, index)) {
+				int next_cost = cost + get_word_cost(index, METRIC_QUARTER_TURN);
+				if (next_cost <= search_depth) {
+					const Cube next_cube = state.cube + get_word_cube(index);
+					int next_estimate = heuristic(next_cube);
+					stack.push_back(SearchState{ next_cube, next_cost, next_estimate, index, 0, 100 });
+					node_counter++;
+				}
+				else {
+					state.min = std::min(state.min, next_cost);
+				}
 			}
-			continue;
 		}
-		
-		if (stack.size() == 1) {
+		else if (stack.size() == 1) {
 			// increase search depth
 			search_depth = state.min;
 			printf("search depth now %d (nodes touched: %d)\n", search_depth, node_counter);
 			state.index = 0;
 			state.min = 100;
-		} else {
+		}
+		else {
 			int min = state.min;
 			stack.pop_back();
 			stack.back().min = std::min(stack.back().min, min);
-			stack.back().estimate = std::max(stack.back().estimate, estimate - cost);
 		}
 	}
 }
