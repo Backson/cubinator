@@ -11,6 +11,7 @@ public:
 	IdaStarSolver(int(*heuristic)(const Cube &), bool(*condition)(const Cube &));
 	void solve(const Cube &);
 	void print_solution();
+	void set_log(bool b = true);
 	Cube get_solution();
 	int get_solution_turn_number();
 private:
@@ -33,6 +34,7 @@ private:
 	std::vector<SearchState> stack;
 	int(*heuristic)(const Cube &);
 	bool(*condition)(const Cube &);
+	bool log;
 };
 
 #endif // ida_star_solver_h

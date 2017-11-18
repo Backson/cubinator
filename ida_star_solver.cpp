@@ -10,17 +10,22 @@ IdaStarSolver::IdaStarSolver(int(*heuristic)(const Cube &))
 	: heuristic(heuristic), condition(nullptr)
 {
 	condition = [](const Cube &cube) { return cube == Cube::TURN_IDENTITY; };
+	log = false;
 }
 IdaStarSolver::IdaStarSolver(int(*heuristic)(const Cube &), bool(*condition)(const Cube &))
 	: heuristic(heuristic), condition(condition)
 {
-	// nothing
+	log = false;
+}
+
+void IdaStarSolver::set_log(bool b) {
+	log = b;
 }
 
 void IdaStarSolver::solve(const Cube& cube) {
 	// depth limited search
 	int search_depth = heuristic(cube);
-	printf("search depth is %d\n", search_depth);
+	if (log) printf("search depth is %d\n", search_depth);
 
 	// stack search state, so we don't have to use recursion
 	stack.clear();
@@ -61,7 +66,7 @@ void IdaStarSolver::solve(const Cube& cube) {
 		else if (stack.size() == 1) {
 			// increase search depth
 			search_depth = state.min;
-			printf("search depth now %d (nodes touched: %d)\n", search_depth, node_counter);
+			if (log) printf("search depth now %d (nodes touched: %d)\n", search_depth, node_counter);
 			state.index = 0;
 			state.min = 100;
 		}
@@ -71,6 +76,7 @@ void IdaStarSolver::solve(const Cube& cube) {
 			stack.back().min = std::min(stack.back().min, min);
 		}
 	}
+	if (log) printf("found after %d turns and %d touched nodes.\n", stack.back().cost, node_counter);
 }
 
 void IdaStarSolver::print_solution() {

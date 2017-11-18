@@ -364,6 +364,9 @@ void test_solver() {
 	IdaStarSolver dumb_solver(&dumb_heuristic);
 	IdaStarSolver smart_solver(&smart_heuristic);
 
+	dumb_solver.set_log();
+	smart_solver.set_log();
+
 	printf("dumb solver:\n");
 	dumb_solver.solve(cube1);
 	dumb_solver.print_solution();
