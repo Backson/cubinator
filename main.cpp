@@ -12,6 +12,12 @@
 #include "cube_ex.h"
 #include "cube_random.h"
 #include "ida_star_solver.h"
+#include "heuristic.h"
+
+#define HEURISTIC_CORNER_TABLE_DEPTH 9
+#define HEURISTIC_CORNER_TABLE_BITS 24
+#define HEURISTIC_EDGES_TABLE_DEPTH 9
+#define HEURISTIC_EDGES_TABLE_BITS 22
 
 std::default_random_engine rng;
 
@@ -102,11 +108,6 @@ int dumb_heuristic(const Cube &cube) {
 	return 1;
 }
 
-static int *g_table1 = nullptr;
-static int *g_table2 = nullptr;
-static int *g_table3 = nullptr;
-static unsigned int g_table_size = 0;
-
 unsigned int hash_function_corners(const Cube &cube) {
 	unsigned int hash = 0xf2f57582;
 
@@ -121,10 +122,18 @@ unsigned int hash_function_corners(const Cube &cube) {
 unsigned int hash_function_upper_edges(const Cube &cube) {
 	unsigned int hash = 0xae7cfd5f;
 
-	for (int i = 0; i < 6; ++i){
-		hash = cube.edges().element(i) + (hash << 6) + (hash << 16) - hash;
-		hash = cube.edge_orients()[i] + (hash << 6) + (hash << 16) - hash;
-		hash = (hash << 1) | (hash >> 31);
+	for (int i = 0; i < 12; ++i){
+		int element = cube.edges().element(i);
+		int orient = cube.edge_orients()[i];
+		if (0 <= element && element < 6) {
+			hash = element + (hash << 6) + (hash << 16) - hash;
+			hash = orient + (hash << 6) + (hash << 16) - hash;
+			hash = (hash << 1) | (hash >> 31);
+		}
+		else {
+			hash = (2 * i + 13) + (hash << 6) + (hash << 16) - hash;
+			hash = (hash << 1) | (hash >> 31);
+		}
 	}
 	return hash;
 };
@@ -132,29 +141,40 @@ unsigned int hash_function_upper_edges(const Cube &cube) {
 unsigned int hash_function_lower_edges(const Cube &cube) {
 	unsigned int hash = 0xb474a585;
 
-	for (int i = 6; i < 12; ++i){
-		hash = cube.edges().element(i) + (hash << 6) + (hash << 16) - hash;
-		hash = cube.edge_orients()[i] + (hash << 6) + (hash << 16) - hash;
-		hash = (hash << 1) | (hash >> 31);
+	for (int i = 0; i < 12; ++i){
+		int element = cube.edges().element(i);
+		int orient = cube.edge_orients()[i];
+		if (6 <= element && element < 12) {
+			hash = element + (hash << 6) + (hash << 16) - hash;
+			hash = orient + (hash << 6) + (hash << 16) - hash;
+			hash = (hash << 1) | (hash >> 31);
+		}
+		else {
+			hash = (2 * i + 13) + (hash << 6) + (hash << 16) - hash;
+			hash = (hash << 1) | (hash >> 31);
+		}
 	}
 	return hash;
 };
 
 int smart_heuristic1(const Cube &cube) {
-	unsigned int hash = hash_function_corners(cube);
-	int result = g_table1[hash % g_table_size];
+	static HashTableHeuristic h("corners",
+		hash_function_corners, HEURISTIC_CORNER_TABLE_DEPTH, HEURISTIC_CORNER_TABLE_BITS);
+	int result = h(cube);
 	return result;
 }
 
 int smart_heuristic2(const Cube &cube) {
-	unsigned int hash = hash_function_upper_edges(cube);
-	int result = g_table2[hash % g_table_size];
+	static HashTableHeuristic h("uedges",
+		hash_function_upper_edges, HEURISTIC_EDGES_TABLE_DEPTH, HEURISTIC_EDGES_TABLE_BITS);
+	int result = h(cube);
 	return result;
 }
 
 int smart_heuristic3(const Cube &cube) {
-	unsigned int hash = hash_function_lower_edges(cube);
-	int result = g_table3[hash % g_table_size];
+	static HashTableHeuristic h("ledges",
+		hash_function_lower_edges, HEURISTIC_EDGES_TABLE_DEPTH, HEURISTIC_EDGES_TABLE_BITS);
+	int result = h(cube);
 	return result;
 }
 
@@ -169,169 +189,27 @@ int smart_heuristic(const Cube &cube) {
 	return std::max(std::max(result1, result2), result3);
 }
 
-static void search_visitor(int m, Cube cube, int *table, int table_size) {
-	int ind = hash_function_corners(cube) % table_size;
-	table[table_size * 0 + ind] = std::min(table[table_size * 0 + ind], m);
-	ind = hash_function_upper_edges(cube) % table_size;
-	table[table_size * 1 + ind] = std::min(table[table_size * 1 + ind], m);
-	ind = hash_function_lower_edges(cube) % table_size;
-	table[table_size * 2 + ind] = std::min(table[table_size * 2 + ind], m);
-};
-
-static void search_traversal(int n, int m, Cube cube, int last_turn, int *table, int table_size) {
-	search_visitor(m, cube, table, table_size);
-	if (n == m) return;
-	for (int i = 0; i < Cube::Metric::size(); ++i) {
-		if (i != (last_turn ^ 1))
-			search_traversal(n, m + 1, cube + Cube::Metric::get(i), i, table, table_size);
-	}
-};
-
-void compute_heuristic_single(int n, const Cube &start, int bias) {
-	auto table_size = g_table_size;
-	int *local_table = new int[table_size * 3];
-
-	for (unsigned int i = 0; i < table_size * 3; ++i)
-		local_table[i] = n + 1;
-
-	search_traversal(n, 0, start, -1, local_table, table_size);
-
-	#pragma omp critical
-	for (unsigned int i = 0; i < table_size; ++i) {
-		int old = g_table1[i];
-		int current = local_table[table_size * 0 + i] + bias;
-		g_table1[i] = current < old ? current : old;
-		old = g_table2[i];
-		current = local_table[table_size * 1 + i] + bias;
-		g_table2[i] = current < old ? current : old;
-		old = g_table3[i];
-		current = local_table[table_size * 2 + i] + bias;
-		g_table3[i] = current < old ? current : old;
-	}
-
-	delete[] local_table;
-}
-
-void compute_heuristic(int n, int table_bits, bool parallel = false) {
-	g_table_size = 1 << table_bits;
-
-	if (g_table1 != nullptr) delete[] g_table1;
-	g_table1 = new int[g_table_size];
-	if (g_table2 != nullptr) delete[] g_table2;
-	g_table2 = new int[g_table_size];
-	if (g_table3 != nullptr) delete[] g_table3;
-	g_table3 = new int[g_table_size];
-
-	printf("n = %2d, s = 0x%05x...\n", n, g_table_size);
-	
-	for (unsigned int i = 0; i < g_table_size; ++i) {
-		g_table1[i] = n + 1;
-		g_table2[i] = n + 1;
-		g_table3[i] = n + 1;
-	}
-
-	if (parallel) {
-		#pragma omp parallel for shared(g_table1, g_table2, g_table3, g_table_size)
-		for (int i = 0; i < Cube::Metric::size(); ++i) {
-			int tid = omp_get_thread_num();
-			int tnum = omp_get_num_threads();
-			printf("Hi, thread %d of %d clocking in!\n", tid, tnum);
-			const Cube &start = Cube::Metric::get(i);
-			compute_heuristic_single(n, start, 1);
-		}
-	} else {
-		for (int i = 0; i < Cube::Metric::size(); ++i) {
-			int tid = omp_get_thread_num();
-			int tnum = omp_get_num_threads();
-			printf("Hi, thread %d of %d clocking in!\n", tid, tnum);
-			const Cube &start = Cube::Metric::get(i);
-			compute_heuristic_single(n, start, 1);
-		}
-	}
-	
-	// dump the table into a file
-	char filename[100];
-	sprintf(filename, "table_%d_%d_1%s.txt", n, table_bits, (parallel ? "_p" : ""));
-	FILE *file1 = fopen(filename, "w");
-	sprintf(filename, "table_%d_%d_2%s.txt", n, table_bits, (parallel ? "_p" : ""));
-	FILE *file2 = fopen(filename, "w");
-	sprintf(filename, "table_%d_%d_3%s.txt", n, table_bits, (parallel ? "_p" : ""));
-	FILE *file3 = fopen(filename, "w");
-	for (unsigned int i = 0; i < g_table_size; ++i) {
-		fprintf(file1, "%d, ", g_table1[i]);
-		fprintf(file2, "%d, ", g_table2[i]);
-		fprintf(file3, "%d, ", g_table3[i]);
-		if ((i + 1) % 20 == 0) {
-			fprintf(file1, "\n");
-			fprintf(file2, "\n");
-			fprintf(file3, "\n");
-		}
-	}
-	fclose(file1);
-	fclose(file2);
-	fclose(file3);
-	
-
-}
-
 void heuristic_statistic() {
-	int histo[30];
-	for (int i = 0; i < 30; ++i)
+	int histo[30*4];
+	for (int i = 0; i < 30*4; ++i)
 		histo[i] = 0;
 
 	std::default_random_engine rng;
 	rng.seed(53);
 	for (int i = 0; i < 1000000; ++i) {
 		Cube cube = get_random_cube(rng);
-		int table_entry = smart_heuristic(cube);
-		histo[table_entry]++;
+		histo[smart_heuristic1(cube) + 30 * 0]++;
+		histo[smart_heuristic2(cube) + 30 * 1]++;
+		histo[smart_heuristic3(cube) + 30 * 2]++;
+		histo[smart_heuristic(cube) + 30 * 3]++;
 	}
 
 	// print histogram of random scrambles
+	printf("corners, uedges, ledges, total\n");
 	for (int i = 0; i <= 20; ++i)
-		printf("%2d: %7d\n", i, histo[i]);
+		printf("%2d: %7d %7d %7d %7d\n",
+			i, histo[i + 30 * 0], histo[i + 30 * 1], histo[i + 30 * 2], histo[i + 30 * 3]);
 	printf("\n");
-}
-
-void load_heuristic(int n, int table_bits) {
-	g_table_size = 1 << table_bits;
-	bool parallel = true;
-	
-	if (g_table1 != nullptr) delete[] g_table1;
-	g_table1 = new int[g_table_size];
-	if (g_table2 != nullptr) delete[] g_table2;
-	g_table2 = new int[g_table_size];
-	if (g_table3 != nullptr) delete[] g_table3;
-	g_table3 = new int[g_table_size];
-
-	char filename[100];
-	
-	std::fstream ifs1;
-	sprintf(filename, "table_%d_%d_1%s.txt", n, table_bits, (parallel ? "_p" : ""));
-	ifs1.open(filename, std::ios_base::in);
-	std::fstream ifs2;
-	sprintf(filename, "table_%d_%d_2%s.txt", n, table_bits, (parallel ? "_p" : ""));
-	ifs2.open(filename, std::ios_base::in);
-	std::fstream ifs3;
-	sprintf(filename, "table_%d_%d_3%s.txt", n, table_bits, (parallel ? "_p" : ""));
-	ifs3.open(filename, std::ios_base::in);
-
-	for (int i = 0; i < g_table_size; ++i) {
-		int val;
-		char c;
-
-		ifs1 >> val;
-		ifs1.get(c);
-		g_table1[i] = val;
-
-		ifs2 >> val;
-		ifs2.get(c);
-		g_table2[i] = val;
-
-		ifs3 >> val;
-		ifs3.get(c);
-		g_table3[i] = val;
-	}
 }
 
 Cube conjugate(const Cube &cube, const Cube &other) {
@@ -339,25 +217,6 @@ Cube conjugate(const Cube &cube, const Cube &other) {
 }
 
 void test_solver() {
-	bool load = true;
-	int precomputed_depth = 9;
-	int table_size_bits = 24;
-
-	printf("producing lookup table...");
-	fflush(stdout);
-	if (load) {
-		load_heuristic(precomputed_depth, table_size_bits);
-	}
-	else {
-		auto start = std::chrono::high_resolution_clock::now();
-		compute_heuristic(precomputed_depth, table_size_bits, true);
-		auto stop = std::chrono::high_resolution_clock::now();
-		printf("%d ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
-	}
-	printf(" done.\n");
-
-	heuristic_statistic();
-
 	Cube cube1 = get_random_cube(rng, 5);
 	Cube cube2 = get_random_cube(rng, 17);
 
@@ -480,12 +339,12 @@ void test_symmetry() {
 int main(int argc, char *argv[]) {
 	rng.seed(42);
 
+	smart_heuristic(Cube::TURN_IDENTITY);
+	heuristic_statistic();
+
 	//test_symmetry();
 	test_solver();
 
-	if (g_table1 != nullptr) delete[] g_table1;
-	if (g_table2 != nullptr) delete[] g_table2;
-	if (g_table3 != nullptr) delete[] g_table3;
 	getchar();
 	return 0;
 }
