@@ -187,6 +187,8 @@ int get_word_cost(int i, int metric) {
 
 // checks whether two words can come right after each other
 bool can_words_be_switched(int i, int j) {
+	if (i < 0 || j < 0)
+		return false;
 	const int CATEGORY_SIZE = WORD_NUM / 3;
 	return i / CATEGORY_SIZE == j / CATEGORY_SIZE;
 }
