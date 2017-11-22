@@ -10,12 +10,11 @@ IdaStarSolver::IdaStarSolver(int(*heuristic)(const Cube &))
 	: heuristic(heuristic), condition(nullptr)
 {
 	condition = [](const Cube &cube) { return cube == Cube::TURN_IDENTITY; };
-	log = false;
 }
 IdaStarSolver::IdaStarSolver(int(*heuristic)(const Cube &), bool(*condition)(const Cube &))
 	: heuristic(heuristic), condition(condition)
 {
-	log = false;
+	// nothing
 }
 
 void IdaStarSolver::set_log(bool b) {
@@ -51,7 +50,7 @@ void IdaStarSolver::solve(const Cube& cube) {
 			int index = stack.back().index++;
 			// don't check the inverse of the last turn or similar things
 			if (stack.size() == 1 || !can_words_be_switched(stack.back().last_turn, index)) {
-				int next_cost = cost + get_word_cost(index, METRIC_QUARTER_TURN);
+				int next_cost = cost + get_word_cost(index, metric);
 				if (next_cost <= search_depth) {
 					const Cube next_cube = state.cube + get_word_cube(index);
 					int next_estimate = heuristic(next_cube);

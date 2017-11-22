@@ -2,6 +2,7 @@
 #define ida_star_solver_h
 
 #include "cube.h"
+#include "word.h"
 
 #include <vector>
 
@@ -34,7 +35,8 @@ private:
 	std::vector<SearchState> stack;
 	int(*heuristic)(const Cube &);
 	bool(*condition)(const Cube &);
-	bool log;
+	bool log = false;
+	int metric = METRIC_QUARTER_TURN;
 };
 
 #endif // ida_star_solver_h

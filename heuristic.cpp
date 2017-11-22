@@ -7,6 +7,14 @@
 #include <functional>
 #include <vector>
 
+void Heuristic::set_metric(int metric) {
+	this->metric = metric;
+}
+
+int Heuristic::get_metric() const {
+	return metric;
+}
+
 int DumbHeuristic::eval(const Cube &) const {
 	return 1;
 }
@@ -71,7 +79,7 @@ HashTableHeuristic::HashTableHeuristic(const char *name, unsigned int(*hash_func
 			}
 			else {
 				int next_index = stack[stack_head].index++;
-				int next_cost = stack[stack_head].cost + get_word_cost(next_index, METRIC_QUARTER_TURN);
+				int next_cost = stack[stack_head].cost + get_word_cost(next_index, get_metric());
 				// termination criterion
 				if (next_cost > depth)
 					continue;

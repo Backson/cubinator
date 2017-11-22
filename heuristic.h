@@ -3,6 +3,8 @@
 
 #include "cube.h"
 
+#include "word.h"
+
 class Heuristic {
 public:
 	virtual ~Heuristic() {};
@@ -11,6 +13,12 @@ public:
 	inline int operator () (const Cube &cube) const {
 		return eval(cube);
 	}
+
+	void set_metric(int);
+	int get_metric() const;
+
+private:
+	int metric = METRIC_QUARTER_TURN;
 };
 
 class DumbHeuristic : public Heuristic {
