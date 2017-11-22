@@ -31,6 +31,8 @@ public:
 	ExtendedCube operator-(const ExtendedCube&) const;
 	ExtendedCube& operator-=(const ExtendedCube&);
 	
+	ExtendedCube operator-() const;
+	
 	ExtendedCube operator*(int exponent) const;
 	ExtendedCube& operator*=(int exponent);
 	

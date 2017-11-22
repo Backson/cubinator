@@ -85,6 +85,10 @@ Cube& Cube::operator-=(const Cube& that) {
 	return *this;
 }
 
+Cube Cube::operator-() const {
+	return this->inverse();
+}
+
 Cube Cube::operator*(int exponent) const {
 	Cube result;
 	

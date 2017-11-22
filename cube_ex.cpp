@@ -68,6 +68,10 @@ ExtendedCube& ExtendedCube::operator-=(const ExtendedCube& that) {
 	return *this;
 }
 
+ExtendedCube ExtendedCube::operator-() const {
+	return this->inverse();
+}
+
 ExtendedCube ExtendedCube::operator*(int exponent) const {
 	ExtendedCube result(*this);
 	result.operator*=(exponent);

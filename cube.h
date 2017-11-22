@@ -91,6 +91,8 @@ public:
 	
 	Cube operator-(const Cube&) const;
 	Cube& operator-=(const Cube&);
+
+	Cube operator-() const;
 	
 	Cube operator*(int exponent) const;
 	Cube& operator*=(int exponent);
