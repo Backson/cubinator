@@ -60,22 +60,6 @@ public:
 	
 	static const Cube TURN_FRONT;
 	static const Cube TURN_BACK;
-
-	class Metric {
-	public:
-		static int size() { return 12; }
-		static const Cube &get(int i) {
-			static const std::array<Cube, 12> all_turns = {
-				Cube::TURN_RIGHT, Cube::TURN_RIGHT.inverse(),
-				Cube::TURN_LEFT, Cube::TURN_LEFT.inverse(),
-				Cube::TURN_FRONT, Cube::TURN_FRONT.inverse(),
-				Cube::TURN_BACK, Cube::TURN_BACK.inverse(),
-				Cube::TURN_UP, Cube::TURN_UP.inverse(),
-				Cube::TURN_DOWN, Cube::TURN_DOWN.inverse(),
-			};
-			return all_turns[i];
-		}
-	};
 	
 	Cube();
 	Cube(const Cube& that) { this->operator=(that); }

@@ -5,6 +5,8 @@
 #include <algorithm>
 
 #include "cube.h"
+#include "metric.h"
+#include "word.h"
 
 template <int length, class RNG>
 Perm<length> get_random_perm(RNG &rng) {
@@ -44,18 +46,13 @@ Cube get_random_cube(RNG &rng) {
 }
 
 template <class RNG>
-Cube get_random_cube(RNG &rng, int n) {
+Cube get_random_cube(RNG &rng, int n, int m = METRIC_DEFAULT) {
+	auto &metric = Metric::get(m);
 	Cube cube = Cube::TURN_IDENTITY;
-	int last_turns[2] = { -1, -1 };
 	for (int i = 0; i < n; ++i) {
-		std::uniform_int_distribution<> distr(0, Cube::Metric::size() - 1);
-		int turn;
-		do {
-			turn = distr(rng);
-		} while ((turn ^ last_turns[0]) == 1 || (turn == last_turns[0] && turn == last_turns[1]));
-		last_turns[1] = last_turns[0];
-		last_turns[0] = turn;
-		cube = cube + Cube::Metric::get(turn);
+		std::uniform_int_distribution<> distr(0, metric.get_move_number() - 1);
+		int turn = distr(rng);
+		cube = cube + metric.get_move(turn);
 	}
 	return cube;
 }

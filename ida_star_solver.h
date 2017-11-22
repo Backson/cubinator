@@ -36,7 +36,7 @@ private:
 	int(*heuristic)(const Cube &);
 	bool(*condition)(const Cube &);
 	bool log = false;
-	int metric = METRIC_QUARTER_TURN;
+	int metric = METRIC_DEFAULT;
 };
 
 #endif // ida_star_solver_h

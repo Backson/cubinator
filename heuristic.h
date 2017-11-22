@@ -18,7 +18,7 @@ public:
 	int get_metric() const;
 
 private:
-	int metric = METRIC_QUARTER_TURN;
+	int metric = METRIC_DEFAULT;
 };
 
 class DumbHeuristic : public Heuristic {
