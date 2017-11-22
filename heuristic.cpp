@@ -45,9 +45,7 @@ HashTableHeuristic::HashTableHeuristic(const char *name, unsigned int(*hash_func
 		fflush(stdout);
 		for (unsigned int i = 0; i < table_size; ++i) {
 			int val;
-			char c;
 			fs >> val;
-			fs >> c;
 			table[i] = val;
 		}
 		printf(" Done.\n");
@@ -106,7 +104,7 @@ HashTableHeuristic::HashTableHeuristic(const char *name, unsigned int(*hash_func
 		fs.open(filename, std::ios::out);
 		if (fs.is_open()) {
 			for (unsigned int i = 0; i < table_size; ++i) {
-				fs << (int) table[i] << ", ";
+				fs << (int) table[i] << " ";
 				if ((i + 1) % 20 == 0)
 					fs << '\n';
 			}
