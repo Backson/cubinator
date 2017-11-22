@@ -28,7 +28,13 @@ HashTableHeuristic::HashTableHeuristic(const char *name, unsigned int(*hash_func
 
 	// name of the text file where the results are stored
 	char filename[0x100];
-	sprintf(filename, "table_%s_%d_%d.txt", name, depth, bits);
+	const char *metric_string;
+	switch (get_metric()) {
+	case METRIC_QUARTER_TURN: metric_string = "qtm"; break;
+	case METRIC_HALF_TURN: metric_string = "htm"; break;
+	default: metric_string = "ukm"; break;
+	}
+	sprintf(filename, "table_%s_%s_%d_%d.txt", metric_string, name, depth, bits);
 	std::fstream fs;
 	if (!force_recompute) {
 		fs.open(filename, std::ios_base::in);
